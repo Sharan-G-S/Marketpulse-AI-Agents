@@ -1,7 +1,23 @@
 # 📈 MarketPulse — Autonomous Financial Intelligence Agent
 
-> **Multi-Agent AI System** powered by **LangGraph** + **LangChain**  
-> Analyzes stocks using autonomous AI agents: news scraping, sentiment analysis, market data, risk assessment, and report generation.
+[![CI](https://github.com/Sharan-G-S/Marketpulse-AI-Agents/actions/workflows/ci.yml/badge.svg)](https://github.com/Sharan-G-S/Marketpulse-AI-Agents/actions)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-0.2%2B-purple.svg)](https://langchain-ai.github.io/langgraph/)
+[![LangChain](https://img.shields.io/badge/LangChain-0.3%2B-green.svg)](https://python.langchain.com/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.39%2B-red.svg)](https://streamlit.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+> A **multi-agent autonomous AI system** that scrapes financial news, analyzes market sentiment, fetches real-time stock data, identifies investment risks, and generates professional investment intelligence reports — all orchestrated by **LangGraph**.
+
+---
+
+## 🎯 What It Does
+
+Enter any stock ticker → 5 AI agents collaborate autonomously → Full investment report in ~60 seconds.
+
+```
+[News Agent] → [Stock Agent] → [Sentiment Agent] → [Risk Agent] → [Report Agent]
+```
 
 ---
 
@@ -9,66 +25,65 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    LangGraph Orchestrator                        │
+│                    LangGraph StateGraph                          │
 │                                                                 │
-│  [News Agent] ──> [Stock Agent] ──> [Sentiment Agent]           │
-│                                           │                     │
-│                                    [Risk Analyst Agent]         │
-│                                           │                     │
-│                                    [Report Generator]           │
-│                                           │                     │
-│                                         END                     │
+│  📰 News Agent   →   📈 Stock Agent                             │
+│                           │                                     │
+│                    🧠 Sentiment Agent                            │
+│                           │                                     │
+│                    ⚠️  Risk Analyst Agent                        │
+│                           │                                     │
+│                    📄 Report Generator                           │
+│                           │                                     │
+│                          END                                    │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Agents
+### Agent Responsibilities
 
-| Agent | Responsibility | Tools Used |
-|-------|---------------|------------|
-| 📰 **News Agent** | Fetches recent financial news | NewsAPI |
-| 📈 **Stock Data Agent** | Real-time & historical market data | yfinance |
-| 🧠 **Sentiment Agent** | LLM-powered news sentiment analysis | LangChain + OpenAI/Gemini |
+| Agent | Role | Tools |
+|-------|------|-------|
+| 📰 **News Agent** | Fetches recent financial news | NewsAPI, mock fallback |
+| 📈 **Stock Data Agent** | Real-time OHLCV + financials | yfinance |
+| 🧠 **Sentiment Agent** | Per-article LLM sentiment scoring | LangChain + OpenAI/Gemini |
 | ⚠️ **Risk Analyst Agent** | Cross-references data, flags risks | LangChain + LLM |
-| 📄 **Report Agent** | Generates investment intelligence report | LangChain + LLM |
+| 📄 **Report Agent** | Generates full markdown report | LangChain + LLM |
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/your-team/marketpulse-ai-agents.git
-cd marketpulse-ai-agents
-```
+### Prerequisites
+- Python 3.10+
+- OpenAI API key **or** Google Gemini API key
+- NewsAPI key *(optional — mock data used if not set)*
 
-### 2. Create a Virtual Environment
+### Installation
+
 ```bash
+# 1. Clone
+git clone https://github.com/Sharan-G-S/Marketpulse-AI-Agents.git
+cd Marketpulse-AI-Agents
+
+# 2. Virtual environment
 python -m venv .venv
-source .venv/bin/activate      # macOS/Linux
-.venv\Scripts\activate         # Windows
-```
+source .venv/bin/activate        # macOS/Linux
+.venv\Scripts\activate           # Windows
 
-### 3. Install Dependencies
-```bash
+# 3. Install dependencies
 pip install -r requirements.txt
-```
 
-### 4. Configure Environment
-```bash
+# 4. Configure
 cp .env.example .env
-# Edit .env and add your API keys
+# Edit .env — add OPENAI_API_KEY or GOOGLE_API_KEY
 ```
 
-Required API keys:
-- **OpenAI** or **Google Gemini** — for LLM (sentiment, risk, reporting)
-- **NewsAPI** *(optional)* — for live news; mock data used if not set
-
-### 5. Run the Streamlit Dashboard
+### Run the Dashboard
 ```bash
 streamlit run ui/app.py
 ```
 
-### 6. Or Run via CLI
+### Run via CLI
 ```bash
 python main.py --ticker AAPL
 python main.py --ticker TSLA --depth deep
@@ -82,39 +97,51 @@ python main.py --ticker MSFT --company "Microsoft Corporation" --depth quick
 ```
 marketpulse-ai-agents/
 │
-├── agents/                     # Individual AI agent modules
-│   ├── news_agent.py           # Fetches financial news articles
-│   ├── sentiment_agent.py      # LLM-based sentiment analyzer
-│   ├── stock_data_agent.py     # Real-time market data fetcher
-│   ├── risk_analyst_agent.py   # Risk assessment & insights
-│   └── report_agent.py         # Investment report generator
+├── agents/                     # Five autonomous AI agent modules
+│   ├── news_agent.py           #   → Fetches financial news
+│   ├── sentiment_agent.py      #   → LLM sentiment analysis
+│   ├── stock_data_agent.py     #   → Real-time market data
+│   ├── risk_analyst_agent.py   #   → Risk flags & insights
+│   ├── report_agent.py         #   → Investment report generation
+│   └── watchlist_agent.py      #   → Multi-ticker market overview
 │
-├── graph/                      # LangGraph workflow
-│   ├── state.py                # Shared state schema (TypedDict)
-│   └── workflow.py             # Graph definition & compilation
+├── graph/
+│   ├── state.py                # Shared TypedDict state schema
+│   └── workflow.py             # LangGraph StateGraph definition
 │
-├── tools/                      # LangChain @tool wrappers
-│   ├── stock_tools.py          # yfinance tools
-│   └── news_tools.py           # NewsAPI tools
+├── tools/
+│   ├── stock_tools.py          # yfinance @tool wrappers
+│   ├── news_tools.py           # NewsAPI @tool wrappers
+│   ├── search_tools.py         # DuckDuckGo search tools
+│   └── indicators.py           # RSI, MACD, Bollinger Bands, MAs
 │
-├── memory/                     # Vector store (future RAG features)
+├── memory/
+│   └── vector_store.py         # FAISS vector store for report history
 │
 ├── config/
-│   └── settings.py             # Central config from env vars
+│   ├── settings.py             # Central environment config
+│   ├── prompts.py              # Versioned prompt template registry
+│   ├── logger.py               # Agent logger + execution timing
+│   └── utils.py                # Formatting, validation helpers
 │
 ├── ui/
-│   └── app.py                  # Streamlit dashboard
+│   ├── app.py                  # Main Streamlit dashboard
+│   └── pages/
+│       ├── 1_Report_History.py # Saved reports browser
+│       └── 2_About.py          # Project info & tech stack
 │
 ├── tests/
-│   └── test_agents.py          # Unit tests (pytest)
+│   ├── conftest.py             # Shared pytest fixtures
+│   ├── test_agents.py          # Agent unit tests
+│   ├── test_integration.py     # Pipeline integration tests
+│   └── test_indicators.py      # Technical indicator tests
 │
-├── docs/                       # Documentation
-├── reports/                    # Auto-generated analysis reports
-│
+├── .github/workflows/ci.yml    # GitHub Actions CI (lint, test, security)
+├── .streamlit/config.toml      # Streamlit dark theme config
+├── docs/architecture.md        # System architecture documentation
 ├── main.py                     # CLI entry point
 ├── requirements.txt
-├── .env.example
-└── .gitignore
+└── .env.example
 ```
 
 ---
@@ -122,56 +149,69 @@ marketpulse-ai-agents/
 ## 🔬 Running Tests
 
 ```bash
+# All tests
 pytest tests/ -v
+
+# With coverage
+pytest tests/ -v --cov=. --cov-report=html
+
+# Specific suite
+pytest tests/test_indicators.py -v
+pytest tests/test_integration.py -v
 ```
 
 ---
 
-## 🤝 Team Contribution Guide
+## ⚙️ Configuration
 
-| Member | Suggested Ownership |
-|--------|---------------------|
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `LLM_PROVIDER` | `openai` or `google` | `openai` |
+| `LLM_MODEL` | Model name | `gpt-4o-mini` |
+| `OPENAI_API_KEY` | OpenAI API key | *(required)* |
+| `GOOGLE_API_KEY` | Google Gemini API key | *(optional)* |
+| `NEWSAPI_KEY` | NewsAPI key | *(optional, mock if unset)* |
+| `DEFAULT_PERIOD` | yfinance history period | `1mo` |
+| `REPORT_OUTPUT_DIR` | Report save directory | `./reports` |
+
+---
+
+## 👥 Team Contribution Guide
+
+| Member | Ownership Area |
+|--------|---------------|
 | Member 1 | `agents/news_agent.py` + `tools/news_tools.py` |
-| Member 2 | `agents/sentiment_agent.py` |
-| Member 3 | `agents/stock_data_agent.py` + `tools/stock_tools.py` |
+| Member 2 | `agents/sentiment_agent.py` + `config/prompts.py` |
+| Member 3 | `agents/stock_data_agent.py` + `tools/stock_tools.py` + `tools/indicators.py` |
 | Member 4 | `agents/risk_analyst_agent.py` |
 | Member 5 | `agents/report_agent.py` + `graph/workflow.py` |
-| Member 6 | `ui/app.py` + `tests/` |
+| Member 6 | `ui/app.py` + `ui/pages/` + `tests/` |
 
 ---
 
-## 🛠️ Tech Stack
+## 🌟 Features
 
-- **LangGraph** — Multi-agent state machine orchestration
-- **LangChain** — LLM chains, prompt templates, tool wrappers
-- **OpenAI GPT-4o / Google Gemini** — LLM backbone
-- **yfinance** — Free stock market data
-- **NewsAPI** — Financial news articles
-- **Streamlit** — Interactive dashboard UI
-- **Plotly** — Candlestick charts & visualizations
-- **FAISS** — Vector store for future memory features
-
----
-
-## 📊 Features
-
-- ✅ Real-time stock data (price, market cap, PE ratio, beta, 52W range)
-- ✅ Interactive candlestick price chart
-- ✅ LLM-powered news sentiment analysis (Bullish/Bearish/Neutral)
-- ✅ Automated risk flag detection
-- ✅ AI-generated investment insights
-- ✅ Full markdown investment report (downloadable)
-- ✅ CLI + Streamlit UI support
-- ✅ Supports OpenAI and Google Gemini
-- ✅ Mock news data for development (no API key required)
+- ✅ **5 autonomous AI agents** orchestrated by LangGraph StateGraph
+- ✅ **Real-time stock data** (price, market cap, PE, beta, 52W range)
+- ✅ **Interactive candlestick charts** with Plotly
+- ✅ **LLM sentiment analysis** per article + overall score
+- ✅ **Technical indicators** — RSI, MACD, Bollinger Bands, SMA/EMA
+- ✅ **Risk flagging** with Buy/Hold/Sell/Avoid recommendation
+- ✅ **Downloadable markdown reports**
+- ✅ **FAISS vector store** for report memory
+- ✅ **DuckDuckGo search** for supplemental research
+- ✅ **Multi-page Streamlit UI** with dark theme
+- ✅ **CLI support** with depth control
+- ✅ **GitHub Actions CI** — lint, test, security
+- ✅ **Mock news fallback** — works without NewsAPI key
 
 ---
 
 ## ⚠️ Disclaimer
 
-MarketPulse is an AI research tool for **educational purposes only**.  
-It does **not** constitute financial advice. Always consult a qualified financial advisor before making investment decisions.
+MarketPulse is an **educational AI research tool** only.
+It does **not** constitute financial advice. Always consult a qualified financial advisor.
 
 ---
 
-*Built with ❤️ using LangGraph + LangChain*
+*Built with ❤️ using LangGraph + LangChain · MIT License*
