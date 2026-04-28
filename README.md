@@ -214,4 +214,4 @@ It does **not** constitute financial advice. Always consult a qualified financia
 
 ---
 
-*Built with ❤️ using LangGraph + LangChain · MIT License*
+ *MIT License*
