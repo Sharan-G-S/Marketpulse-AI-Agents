@@ -9,7 +9,7 @@
 
 > A **multi-agent autonomous AI system** that scrapes financial news, analyzes market sentiment, fetches real-time stock data, identifies investment risks, and generates professional investment intelligence reports — all orchestrated by **LangGraph**.
 
----
+
 
 ## 🎯 What It Does
 
@@ -19,7 +19,7 @@ Enter any stock ticker → 5 AI agents collaborate autonomously → Full investm
 [News Agent] → [Stock Agent] → [Sentiment Agent] → [Risk Agent] → [Report Agent]
 ```
 
----
+
 
 ## 🏗️ Architecture
 
@@ -49,7 +49,7 @@ Enter any stock ticker → 5 AI agents collaborate autonomously → Full investm
 | ⚠️ **Risk Analyst Agent** | Cross-references data, flags risks | LangChain + LLM |
 | 📄 **Report Agent** | Generates full markdown report | LangChain + LLM |
 
----
+
 
 ## 🚀 Quick Start
 
@@ -90,7 +90,7 @@ python main.py --ticker TSLA --depth deep
 python main.py --ticker MSFT --company "Microsoft Corporation" --depth quick
 ```
 
----
+
 
 ## 📁 Project Structure
 
@@ -144,7 +144,7 @@ marketpulse-ai-agents/
 └── .env.example
 ```
 
----
+
 
 ## 🔬 Running Tests
 
@@ -160,7 +160,7 @@ pytest tests/test_indicators.py -v
 pytest tests/test_integration.py -v
 ```
 
----
+
 
 ## ⚙️ Configuration
 
@@ -174,7 +174,7 @@ pytest tests/test_integration.py -v
 | `DEFAULT_PERIOD` | yfinance history period | `1mo` |
 | `REPORT_OUTPUT_DIR` | Report save directory | `./reports` |
 
----
+
 
 ## 👥 Team Contribution Guide
 
@@ -187,7 +187,7 @@ pytest tests/test_integration.py -v
 | Member 5 | `agents/report_agent.py` + `graph/workflow.py` |
 | Member 6 | `ui/app.py` + `ui/pages/` + `tests/` |
 
----
+
 
 ## 🌟 Features
 
@@ -205,13 +205,13 @@ pytest tests/test_integration.py -v
 - ✅ **GitHub Actions CI** — lint, test, security
 - ✅ **Mock news fallback** — works without NewsAPI key
 
----
+
 
 ## ⚠️ Disclaimer
 
 MarketPulse is an **educational AI research tool** only.
 It does **not** constitute financial advice. Always consult a qualified financial advisor.
 
----
+
 
  *MIT License*
