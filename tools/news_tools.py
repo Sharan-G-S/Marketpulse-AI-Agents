@@ -3,11 +3,13 @@ Financial News Tools
 Fetches news articles from NewsAPI and formats them for agent consumption.
 """
 
-from langchain_core.tools import tool
-from typing import List, Dict, Any
-import requests
 from datetime import datetime, timedelta
-from config.settings import NEWSAPI_KEY, NEWS_MAX_ARTICLES
+from typing import Any, Dict, List
+
+from langchain_core.tools import tool
+import requests
+
+from config.settings import NEWS_MAX_ARTICLES, NEWSAPI_KEY
 
 
 @tool

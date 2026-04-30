@@ -3,11 +3,12 @@ Stock Market Data Tools
 Wraps yfinance into LangChain-compatible @tool functions.
 """
 
-from langchain_core.tools import tool
-import yfinance as yf
-from typing import Dict, Any, List
-import pandas as pd
 from datetime import datetime
+from typing import Any, Dict, List
+
+from langchain_core.tools import tool
+import pandas as pd
+import yfinance as yf
 
 
 @tool
