@@ -5,14 +5,14 @@ Defines the multi-agent graph: nodes, edges, conditional routing,
 and the compiled StateGraph that drives the full analysis pipeline.
 """
 
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
 
-from graph.state import MarketPulseState
 from agents.news_agent import news_agent
+from agents.report_agent import report_agent
+from agents.risk_analyst_agent import risk_analyst_agent
 from agents.sentiment_agent import sentiment_agent
 from agents.stock_data_agent import stock_data_agent
-from agents.risk_analyst_agent import risk_analyst_agent
-from agents.report_agent import report_agent
+from graph.state import MarketPulseState
 
 
 # ── Guard: Abort if any critical error is present ─────────────────────────────

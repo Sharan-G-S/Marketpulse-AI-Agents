@@ -6,8 +6,8 @@ agents in the LangGraph workflow. Every agent reads from and writes
 back to this state object.
 """
 
-from typing import TypedDict, Annotated, List, Dict, Any, Optional
 import operator
+from typing import Annotated, Any, Dict, List, Optional, TypedDict
 
 
 class MarketPulseState(TypedDict):

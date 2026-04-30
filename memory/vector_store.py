@@ -6,14 +6,16 @@ analysis history using LangChain + FAISS embeddings.
 
 import os
 from typing import List, Optional
+
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
-from config.settings import VECTOR_STORE_PATH, EMBEDDING_MODEL
+
+from config.settings import EMBEDDING_MODEL, VECTOR_STORE_PATH
 
 
 def get_embeddings():
     """Return the configured embedding model."""
-    from config.settings import LLM_PROVIDER, OPENAI_API_KEY, GOOGLE_API_KEY
+    from config.settings import GOOGLE_API_KEY, LLM_PROVIDER, OPENAI_API_KEY
     if LLM_PROVIDER == "google":
         from langchain_google_genai import GoogleGenerativeAIEmbeddings
         return GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=GOOGLE_API_KEY)

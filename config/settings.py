@@ -4,6 +4,7 @@ Loads and validates all environment variables and app constants.
 """
 
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()

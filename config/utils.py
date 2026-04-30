@@ -3,11 +3,10 @@ Utility functions for MarketPulse — number formatting, text helpers,
 ticker validation, and report export utilities.
 """
 
-import re
-import os
 from datetime import datetime
+import os
+import re
 from typing import Optional
-
 
 # ── Number Formatting ─────────────────────────────────────────────────────────
 
