@@ -4,10 +4,11 @@ Responsible for scraping and collecting financial news articles
 for a given ticker/company using LangChain tools + LLM.
 """
 
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
-from langchain_core.messages import HumanMessage, SystemMessage
 from typing import Any
+
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import ChatPromptTemplate
 
 from graph.state import MarketPulseState
 from tools.news_tools import fetch_financial_news, fetch_top_headlines
@@ -15,7 +16,7 @@ from tools.news_tools import fetch_financial_news, fetch_top_headlines
 
 def get_llm():
     """Lazy-load the configured LLM."""
-    from config.settings import LLM_PROVIDER, LLM_MODEL, OPENAI_API_KEY, GOOGLE_API_KEY
+    from config.settings import GOOGLE_API_KEY, LLM_MODEL, LLM_PROVIDER, OPENAI_API_KEY
 
     if LLM_PROVIDER == "google":
         from langchain_google_genai import ChatGoogleGenerativeAI
