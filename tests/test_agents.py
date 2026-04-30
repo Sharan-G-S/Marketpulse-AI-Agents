@@ -250,27 +250,38 @@ class TestState:
 
 
 class TestNewsAgent:
-    @patch("agents.news_agent.fetch_financial_news")
-    def test_news_agent_runs_with_mock(self, mock_fetch):
+    def test_news_agent_runs_with_mock(self):
         """News agent should populate raw_news and set news_fetched=True."""
+        import importlib
+        import sys
+
+        # agents/__init__.py shadows 'agents.news_agent' with the function;
+        # force the real submodule into sys.modules, then grab it directly.
+        importlib.import_module("agents.news_agent")
+        _news_mod = sys.modules["agents.news_agent"]
         from agents.news_agent import news_agent
 
-        mock_fetch.invoke.return_value = MOCK_NEWS
+        with patch.object(_news_mod, "fetch_financial_news") as mock_fetch:
+            mock_fetch.invoke.return_value = MOCK_NEWS
+            result = news_agent({**MOCK_STATE})
 
-        result = news_agent({**MOCK_STATE})
         assert result["news_fetched"] is True
         assert isinstance(result["raw_news"], list)
         assert len(result["messages"]) >= 1
 
-    @patch("agents.news_agent.fetch_financial_news")
-    def test_news_agent_empty_fallback(self, mock_fetch):
+    def test_news_agent_empty_fallback(self):
         """When fetch returns empty, agent should still set news_fetched=True."""
+        import importlib
+        import sys
+
+        importlib.import_module("agents.news_agent")
+        _news_mod = sys.modules["agents.news_agent"]
         from agents.news_agent import news_agent
 
-        # Simulate empty response from API
-        mock_fetch.invoke.return_value = []
-
-        with patch("agents.news_agent.fetch_top_headlines") as mock_headlines:
+        with patch.object(_news_mod, "fetch_financial_news") as mock_fetch, patch.object(
+            _news_mod, "fetch_top_headlines"
+        ) as mock_headlines:
+            mock_fetch.invoke.return_value = []
             mock_headlines.invoke.return_value = MOCK_NEWS
             result = news_agent({**MOCK_STATE})
 
@@ -283,28 +294,35 @@ class TestNewsAgent:
 
 
 class TestStockDataAgent:
-    @patch("agents.stock_data_agent.get_stock_summary")
-    @patch("agents.stock_data_agent.get_price_history")
-    @patch("agents.stock_data_agent.calculate_price_change")
-    def test_stock_agent_populates_state(self, mock_calc, mock_history, mock_summary):
+    def test_stock_agent_populates_state(self):
         """Stock agent should fill stock_summary and set stock_fetched=True."""
+        import importlib
+        import sys
+
+        # agents/__init__.py shadows 'agents.stock_data_agent' with the function;
+        # use sys.modules to access the real submodule.
+        importlib.import_module("agents.stock_data_agent")
+        _stock_mod = sys.modules["agents.stock_data_agent"]
         from agents.stock_data_agent import stock_data_agent
 
-        mock_summary.invoke.return_value = MOCK_STOCK_SUMMARY
-        mock_history.invoke.return_value = MOCK_PRICE_HISTORY
-        mock_calc.invoke.return_value = {
-            "change_pct": 1.9,
-            "trend": "Bullish",
-            "start_price": 100.0,
-            "end_price": 115.0,
-            "highest": 115.0,
-            "lowest": 98.0,
-            "volatility": 6.5,
-            "momentum": "Upward",
-        }
+        with patch.object(_stock_mod, "get_stock_summary") as mock_summary, patch.object(
+            _stock_mod, "get_price_history"
+        ) as mock_history, patch.object(_stock_mod, "calculate_price_change") as mock_calc:
+            mock_summary.invoke.return_value = MOCK_STOCK_SUMMARY
+            mock_history.invoke.return_value = MOCK_PRICE_HISTORY
+            mock_calc.invoke.return_value = {
+                "change_pct": 1.9,
+                "trend": "Bullish",
+                "start_price": 100.0,
+                "end_price": 115.0,
+                "highest": 115.0,
+                "lowest": 98.0,
+                "volatility": 6.5,
+                "momentum": "Upward",
+            }
 
-        state = {**MOCK_STATE, "ticker": "MSFT", "company_name": "Microsoft Corporation"}
-        result = stock_data_agent(state)
+            state = {**MOCK_STATE, "ticker": "MSFT", "company_name": "Microsoft Corporation"}
+            result = stock_data_agent(state)
 
         assert result["stock_fetched"] is True
         assert isinstance(result["stock_summary"], dict)
