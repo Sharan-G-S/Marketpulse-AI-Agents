@@ -3,10 +3,10 @@ Watchlist Agent — Monitors multiple tickers simultaneously
 and generates a comparative market intelligence summary.
 """
 
-from typing import List, Dict, Any
-from graph.state import MarketPulseState
-from tools.stock_tools import get_stock_summary, calculate_price_change, get_price_history
+from typing import Any, Dict, List
 
+from graph.state import MarketPulseState
+from tools.stock_tools import calculate_price_change, get_price_history, get_stock_summary
 
 WATCHLIST_DEFAULTS = ["AAPL", "MSFT", "GOOGL", "TSLA", "AMZN", "NVDA", "META", "NFLX"]
 

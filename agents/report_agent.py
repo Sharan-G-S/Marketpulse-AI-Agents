@@ -4,17 +4,18 @@ Synthesizes all agent outputs into a professional, markdown-formatted
 investment intelligence report and saves it to disk.
 """
 
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
 from datetime import datetime
 import os
 
-from graph.state import MarketPulseState
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+
 from config.settings import REPORT_OUTPUT_DIR
+from graph.state import MarketPulseState
 
 
 def get_llm():
-    from config.settings import LLM_PROVIDER, LLM_MODEL, OPENAI_API_KEY, GOOGLE_API_KEY
+    from config.settings import GOOGLE_API_KEY, LLM_MODEL, LLM_PROVIDER, OPENAI_API_KEY
     if LLM_PROVIDER == "google":
         from langchain_google_genai import ChatGoogleGenerativeAI
         return ChatGoogleGenerativeAI(model=LLM_MODEL, google_api_key=GOOGLE_API_KEY, temperature=0.3)

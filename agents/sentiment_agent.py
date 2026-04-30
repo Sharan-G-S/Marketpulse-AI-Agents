@@ -4,16 +4,17 @@ Uses an LLM to analyze the sentiment of each news article
 and produce an overall market sentiment score.
 """
 
-from langchain_core.prompts import ChatPromptTemplate
+from typing import Any, Dict, List
+
 from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any
 
 from graph.state import MarketPulseState
 
 
 def get_llm():
-    from config.settings import LLM_PROVIDER, LLM_MODEL, OPENAI_API_KEY, GOOGLE_API_KEY
+    from config.settings import GOOGLE_API_KEY, LLM_MODEL, LLM_PROVIDER, OPENAI_API_KEY
     if LLM_PROVIDER == "google":
         from langchain_google_genai import ChatGoogleGenerativeAI
         return ChatGoogleGenerativeAI(model=LLM_MODEL, google_api_key=GOOGLE_API_KEY, temperature=0)

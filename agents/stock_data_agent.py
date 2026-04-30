@@ -4,9 +4,9 @@ Fetches real-time and historical stock data using yfinance tools
 and enriches the shared state with market data.
 """
 
+from config.settings import DEFAULT_INTERVAL, DEFAULT_PERIOD
 from graph.state import MarketPulseState
-from tools.stock_tools import get_stock_summary, get_price_history, calculate_price_change
-from config.settings import DEFAULT_PERIOD, DEFAULT_INTERVAL
+from tools.stock_tools import calculate_price_change, get_price_history, get_stock_summary
 
 
 def stock_data_agent(state: MarketPulseState) -> MarketPulseState:
