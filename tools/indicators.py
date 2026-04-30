@@ -4,8 +4,9 @@ Computes RSI, MACD, Bollinger Bands, and moving averages
 from OHLCV price history data.
 """
 
+from typing import Any, Dict, List
+
 import pandas as pd
-from typing import Dict, Any, List
 
 
 def compute_rsi(closes: List[float], period: int = 14) -> float:

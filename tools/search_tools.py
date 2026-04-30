@@ -4,10 +4,10 @@ DuckDuckGo-based fallback search for finding company info,
 analyst ratings, and supplemental financial context.
 """
 
-from langchain_core.tools import tool
-from langchain_community.tools import DuckDuckGoSearchRun, DuckDuckGoSearchResults
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
+from langchain_community.tools import DuckDuckGoSearchResults, DuckDuckGoSearchRun
+from langchain_core.tools import tool
 
 _search_run = DuckDuckGoSearchRun()
 _search_results = DuckDuckGoSearchResults(num_results=5)
