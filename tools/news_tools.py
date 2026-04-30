@@ -3,7 +3,7 @@ Financial News Tools
 Fetches news articles from NewsAPI and formats them for agent consumption.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List
 
 from langchain_core.tools import tool
@@ -22,7 +22,7 @@ def fetch_financial_news(query: str, days_back: int = 7) -> List[Dict[str, Any]]
         # Return mock data if no API key is configured
         return _mock_news(query)
 
-    from_date = (datetime.utcnow() - timedelta(days=days_back)).strftime("%Y-%m-%d")
+    from_date = (datetime.now(timezone.utc) - timedelta(days=days_back)).strftime("%Y-%m-%d")
 
     url = "https://newsapi.org/v2/everything"
     params = {
@@ -98,7 +98,7 @@ def _mock_news(query: str) -> List[Dict[str, Any]]:
             "description": f"{query} exceeded analyst expectations with robust revenue growth driven by strong consumer demand.",
             "url": "https://example.com/news/1",
             "source": "Financial Times",
-            "publishedAt": datetime.utcnow().isoformat(),
+            "publishedAt": datetime.now(timezone.utc).isoformat(),
             "content": f"{query} announced quarterly earnings that surpassed Wall Street expectations by 15%...",
         },
         {
@@ -106,7 +106,7 @@ def _mock_news(query: str) -> List[Dict[str, Any]]:
             "description": "Multiple investment banks have updated their outlook following the latest earnings call.",
             "url": "https://example.com/news/2",
             "source": "Bloomberg",
-            "publishedAt": datetime.utcnow().isoformat(),
+            "publishedAt": datetime.now(timezone.utc).isoformat(),
             "content": "Goldman Sachs and Morgan Stanley both revised their 12-month price targets upward...",
         },
         {
@@ -114,7 +114,7 @@ def _mock_news(query: str) -> List[Dict[str, Any]]:
             "description": "European regulators have launched a probe into competitive practices.",
             "url": "https://example.com/news/3",
             "source": "Reuters",
-            "publishedAt": datetime.utcnow().isoformat(),
+            "publishedAt": datetime.now(timezone.utc).isoformat(),
             "content": "The investigation could result in substantial fines if antitrust violations are confirmed...",
         },
         {
@@ -122,7 +122,7 @@ def _mock_news(query: str) -> List[Dict[str, Any]]:
             "description": "Several major hedge funds have disclosed increased positions in their latest 13F filings.",
             "url": "https://example.com/news/4",
             "source": "MarketWatch",
-            "publishedAt": datetime.utcnow().isoformat(),
+            "publishedAt": datetime.now(timezone.utc).isoformat(),
             "content": "Blackrock and Vanguard both increased their holdings significantly this quarter...",
         },
         {
@@ -130,7 +130,7 @@ def _mock_news(query: str) -> List[Dict[str, Any]]:
             "description": "Operational efficiencies have led to improved gross margins for the company.",
             "url": "https://example.com/news/5",
             "source": "CNBC",
-            "publishedAt": datetime.utcnow().isoformat(),
+            "publishedAt": datetime.now(timezone.utc).isoformat(),
             "content": "Management highlighted supply chain optimizations as a key driver of margin expansion...",
         },
     ]

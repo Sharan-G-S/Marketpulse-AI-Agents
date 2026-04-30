@@ -3,7 +3,7 @@ Utility functions for MarketPulse — number formatting, text helpers,
 ticker validation, and report export utilities.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 import re
 from typing import Optional
@@ -101,7 +101,7 @@ def save_report(report_content: str, ticker: str, output_dir: str = "./reports")
         Absolute path to the saved file.
     """
     os.makedirs(output_dir, exist_ok=True)
-    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     filename = f"{ticker.upper()}_{timestamp}_report.md"
     filepath = os.path.join(output_dir, filename)
 
@@ -122,7 +122,7 @@ def list_saved_reports(output_dir: str = "./reports") -> list:
 
 # ── Text Utilities ─────────────────────────────────────────────────────────────
 
-def truncate(text: str, max_len: int = 100, suffix: str = "…") -> str:
+def truncate(text: str, max_len: int = 100, suffix: str = "...") -> str:
     """Truncate text to max_len characters."""
     if len(text) <= max_len:
         return text
