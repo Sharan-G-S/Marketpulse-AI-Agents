@@ -4,7 +4,7 @@ Provides a decorator and utility class for tracking agent execution time,
 success/failure, and producing a structured audit trail.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 import functools
 import logging
 import time
@@ -32,7 +32,7 @@ class AgentLogger:
     def log(self, message: str, level: str = "info", **kwargs):
         """Log a message with optional structured data."""
         entry = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "agent": self.agent_name,
             "level": level.upper(),
             "message": message,
@@ -107,7 +107,7 @@ class ExecutionTracker:
     def record_run(self, ticker: str, state: Dict[str, Any], elapsed: float):
         self._runs.append({
             "ticker": ticker,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "elapsed_seconds": round(elapsed, 2),
             "risk_level": state.get("risk_level", "N/A"),
             "sentiment": state.get("overall_sentiment", "N/A"),

@@ -6,11 +6,21 @@ analyst ratings, and supplemental financial context.
 
 from typing import Any, Dict, List
 
-from langchain_community.tools import DuckDuckGoSearchResults, DuckDuckGoSearchRun
 from langchain_core.tools import tool
 
-_search_run = DuckDuckGoSearchRun()
-_search_results = DuckDuckGoSearchResults(num_results=5)
+
+def _get_search_run():
+    """Lazy-load DuckDuckGoSearchRun to avoid ImportError when ddgs is absent."""
+    from langchain_community.tools import DuckDuckGoSearchRun
+
+    return DuckDuckGoSearchRun()
+
+
+def _get_search_results():
+    """Lazy-load DuckDuckGoSearchResults to avoid ImportError when ddgs is absent."""
+    from langchain_community.tools import DuckDuckGoSearchResults
+
+    return DuckDuckGoSearchResults(num_results=5)
 
 
 @tool
@@ -21,7 +31,7 @@ def web_search(query: str) -> str:
     or company background information.
     """
     try:
-        return _search_run.run(query)
+        return _get_search_run().run(query)
     except Exception as e:
         return f"Search failed: {e}"
 
@@ -33,8 +43,7 @@ def web_search_results(query: str) -> List[Dict[str, Any]]:
     Returns up to 5 results for a given financial query.
     """
     try:
-        raw = _search_results.run(query)
-        # Parse the raw string into structured results
+        raw = _get_search_results().run(query)
         results = []
         for item in raw.split("], ["):
             try:
@@ -55,7 +64,7 @@ def search_analyst_ratings(ticker: str) -> str:
     """
     query = f"{ticker} stock analyst rating price target 2024 2025 Wall Street consensus"
     try:
-        return _search_run.run(query)
+        return _get_search_run().run(query)
     except Exception as e:
         return f"Could not retrieve analyst ratings: {e}"
 
@@ -68,6 +77,6 @@ def search_company_background(company_name: str) -> str:
     """
     query = f"{company_name} business model competitive advantages recent news 2025"
     try:
-        return _search_run.run(query)
+        return _get_search_run().run(query)
     except Exception as e:
         return f"Could not retrieve company background: {e}"

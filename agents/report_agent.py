@@ -4,7 +4,7 @@ Synthesizes all agent outputs into a professional, markdown-formatted
 investment intelligence report and saves it to disk.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 
 from langchain_core.output_parsers import StrOutputParser
@@ -117,7 +117,7 @@ def report_agent(state: MarketPulseState) -> MarketPulseState:
         report_md = chain.invoke({
             "company_name": company_name,
             "ticker": ticker,
-            "report_date": datetime.utcnow().strftime("%B %d, %Y"),
+            "report_date": datetime.now(timezone.utc).strftime("%B %d, %Y"),
             "analysis_depth": depth.capitalize(),
             "current_price": stock.get("current_price", "N/A"),
             "change_pct": stock.get("change_pct", 0),
@@ -140,7 +140,7 @@ def report_agent(state: MarketPulseState) -> MarketPulseState:
         })
 
         # Save report to disk
-        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         filename = f"{ticker}_{timestamp}_report.md"
         report_path = os.path.join(REPORT_OUTPUT_DIR, filename)
 
@@ -176,7 +176,7 @@ def _generate_fallback_report(state, stock, risk_flags, key_insights) -> str:
     """Generate a simple markdown report without LLM if there's an error."""
     ticker = state["ticker"]
     company_name = state["company_name"]
-    now = datetime.utcnow().strftime("%B %d, %Y")
+    now = datetime.now(timezone.utc).strftime("%B %d, %Y")
 
     return f"""# MarketPulse Investment Report
 ## {company_name} ({ticker})

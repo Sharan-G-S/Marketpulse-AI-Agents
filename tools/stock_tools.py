@@ -3,7 +3,7 @@ Stock Market Data Tools
 Wraps yfinance into LangChain-compatible @tool functions.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 from langchain_core.tools import tool
@@ -42,7 +42,7 @@ def get_stock_summary(ticker: str) -> Dict[str, Any]:
             "industry": info.get("industry", "N/A"),
             "analyst_target_price": info.get("targetMeanPrice", None),
             "recommendation": info.get("recommendationKey", "N/A"),
-            "fetched_at": datetime.utcnow().isoformat(),
+            "fetched_at": datetime.now(timezone.utc).isoformat(),
         }
     except Exception as e:
         return {"error": str(e), "ticker": ticker}
