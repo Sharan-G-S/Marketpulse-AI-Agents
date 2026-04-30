@@ -1,12 +1,18 @@
 # MarketPulse — Technical Indicators Tests
 
+import os
+import sys
+
 import pytest
-import sys, os
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from tools.indicators import (
-    compute_rsi, compute_macd, compute_bollinger_bands,
-    compute_moving_averages, get_all_indicators
+    compute_bollinger_bands,
+    compute_macd,
+    compute_moving_averages,
+    compute_rsi,
+    get_all_indicators,
 )
 
 

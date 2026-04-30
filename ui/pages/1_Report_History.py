@@ -3,9 +3,11 @@ MarketPulse Streamlit Pages — History Page
 Displays all previously generated investment reports from the reports/ directory.
 """
 
-import streamlit as st
-import sys, os
 from datetime import datetime
+import os
+import sys
+
+import streamlit as st
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 

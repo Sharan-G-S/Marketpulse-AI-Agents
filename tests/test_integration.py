@@ -3,8 +3,11 @@ Integration tests for the full LangGraph workflow pipeline.
 These tests run real agent nodes (without LLM calls where possible).
 """
 
+import os
+import sys
+
 import pytest
-import sys, os
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
@@ -57,7 +60,7 @@ class TestWorkflowGraph:
 class TestToolIntegration:
     def test_stock_and_price_tools_chain(self, base_state):
         """Test chaining get_stock_summary → get_price_history → calculate_price_change."""
-        from tools.stock_tools import get_stock_summary, get_price_history, calculate_price_change
+        from tools.stock_tools import calculate_price_change, get_price_history, get_stock_summary
 
         summary = get_stock_summary.invoke({"ticker": "MSFT"})
         assert "current_price" in summary
