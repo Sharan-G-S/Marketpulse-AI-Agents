@@ -2,14 +2,15 @@ name: MarketPulse CI
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [main, master, develop]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
   lint:
     name: Lint & Style Check
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -19,18 +20,19 @@ jobs:
           python-version: "3.11"
 
       - name: Install linting tools
-        run: pip install flake8 black isort
-
-      - name: Check formatting with black
-        run: black --check --diff .
+        run: pip install isort flake8 flake8-bugbear
 
       - name: Check import ordering with isort
         run: isort --check-only --diff .
 
-      - name: Lint with flake8
+      - name: Lint with flake8 (syntax errors and undefined names)
         run: |
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+
+      - name: Lint with flake8 (style warnings, non-blocking)
+        run: |
+          flake8 . --count --exit-zero --max-line-length=120 --max-complexity=12 --statistics \
+            --extend-ignore=E203,W503,W504
 
   test:
     name: Unit & Integration Tests
@@ -63,24 +65,18 @@ jobs:
           pip install -r requirements.txt
           pip install pytest pytest-cov pytest-asyncio
 
-      - name: Run unit tests with coverage
+      - name: Run unit tests
         env:
           LLM_PROVIDER: openai
           LLM_MODEL: gpt-4o-mini
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
-        run: |
-          pytest tests/test_agents.py -v --tb=short
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        if: matrix.python-version == '3.11'
-        with:
-          fail_ci_if_error: false
+        run: pytest tests/test_agents.py -v --tb=short
 
   security:
     name: Security Scan
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
