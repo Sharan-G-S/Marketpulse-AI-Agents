@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main, master]
 
+# Opt into Node.js 24 to silence Node.js 20 deprecation warnings
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   lint:
     name: Lint & Style Check
@@ -26,13 +30,13 @@ jobs:
         run: isort --check-only --diff .
 
       - name: Lint with flake8 (syntax errors and undefined names)
-        run: |
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
       - name: Lint with flake8 (style warnings, non-blocking)
-        run: |
-          flake8 . --count --exit-zero --max-line-length=120 --max-complexity=12 --statistics \
-            --extend-ignore=E203,W503,W504
+        run: >
+          flake8 . --count --exit-zero --max-line-length=120
+          --max-complexity=12 --statistics
+          --extend-ignore=E203,W503,W504
 
   test:
     name: Unit & Integration Tests
@@ -40,6 +44,7 @@ jobs:
     needs: lint
 
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
 
@@ -55,22 +60,29 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('requirements.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
 
-      - name: Install dependencies
+      - name: Install core dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-cov pytest-asyncio
+          pip install \
+            langgraph \
+            langchain \
+            langchain-core \
+            langchain-openai \
+            langchain-community \
+            langchain-google-genai \
+            yfinance \
+            pandas \
+            requests \
+            python-dotenv \
+            pydantic \
+            pytest \
+            pytest-asyncio
 
-      - name: Run unit tests
-        env:
-          LLM_PROVIDER: openai
-          LLM_MODEL: gpt-4o-mini
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
+      - name: Run unit tests (fully mocked - no API keys needed)
         run: pytest tests/test_agents.py -v --tb=short
 
   security:
