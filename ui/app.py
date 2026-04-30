@@ -3,10 +3,13 @@ MarketPulse — Streamlit Dashboard UI
 Dark-themed, rich financial intelligence dashboard.
 """
 
-import streamlit as st
-import sys, os, plotly.graph_objects as go
-import pandas as pd
 from datetime import datetime
+import os
+import sys
+
+import pandas as pd
+import plotly.graph_objects as go
+import streamlit as st
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
