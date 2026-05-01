@@ -54,6 +54,8 @@ def watchlist_agent(state: MarketPulseState) -> MarketPulseState:
         "messages": state.get("messages", []) + [
             f"[Watchlist Agent] Scanned {len(watchlist_data)} tickers for market context."
         ],
+        "watchlist": watchlist_data,
+        "watchlist_done": True,
         # Store in stock_summary for downstream access
         "stock_summary": {
             **state.get("stock_summary", {}),

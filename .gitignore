@@ -27,6 +27,9 @@ ENV/
 reports/
 *.md.bak
 
+# Logs (generated at runtime)
+logs/
+
 # Vector store index
 memory/faiss_index/
 

@@ -6,7 +6,9 @@ success/failure, and producing a structured audit trail.
 
 from datetime import datetime, timezone
 import functools
+import json
 import logging
+import os
 import time
 from typing import Any, Callable, Dict, List
 
@@ -123,3 +125,14 @@ class ExecutionTracker:
 
 
 execution_tracker = ExecutionTracker()
+
+
+def write_json_log(payload: Dict[str, Any], log_dir: str, prefix: str) -> str:
+    """Write structured JSON payload to a timestamped log file."""
+    os.makedirs(log_dir, exist_ok=True)
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    filename = f"{prefix}_{timestamp}.json"
+    path = os.path.join(log_dir, filename)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=True, indent=2)
+    return path
