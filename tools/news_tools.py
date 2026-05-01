@@ -39,8 +39,15 @@ def fetch_financial_news(query: str, days_back: int = 7) -> List[Dict[str, Any]]
         resp.raise_for_status()
         data = resp.json()
 
+        if data.get("status") != "ok":
+            return [{"error": data.get("message", "NewsAPI error"), "title": "Failed to fetch news"}]
+
         articles = []
         for art in data.get("articles", []):
+            title = art.get("title", "")
+            url = art.get("url", "")
+            if not title or not url:
+                continue
             articles.append({
                 "title": art.get("title", ""),
                 "description": art.get("description", ""),

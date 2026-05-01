@@ -9,6 +9,9 @@ and a portfolio health summary — all without requiring an LLM call.
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
+from graph.state import MarketPulseState
+from tools.stock_tools import get_stock_summary
+
 # ---------------------------------------------------------------------------
 # Type aliases
 # ---------------------------------------------------------------------------
@@ -270,6 +273,48 @@ def analyse_portfolio(
         "top_losers": [{"ticker": p["ticker"], "pnl_pct": p["pnl_pct"]} for p in losers],
         "health_summary": health,
         "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Agent wrapper for LangGraph integration
+# ---------------------------------------------------------------------------
+
+
+def portfolio_agent(state: MarketPulseState) -> MarketPulseState:
+    """
+    Portfolio Tracker Agent Node.
+
+    Enriches the shared state with portfolio analytics when positions
+    are provided. If no positions exist, the agent is a no-op.
+    """
+    positions = state.get("portfolio_positions", [])
+    if not positions:
+        return {
+            **state,
+            "portfolio_summary": {},
+            "portfolio_done": True,
+            "messages": state.get("messages", []) + ["[Portfolio Agent] No positions provided; skipped."],
+        }
+
+    tickers = sorted({p.get("ticker", "").upper() for p in positions if p.get("ticker")})
+    price_lookup: Dict[str, Dict[str, Any]] = {}
+
+    for t in tickers:
+        try:
+            price_lookup[t] = get_stock_summary.invoke({"ticker": t})
+        except Exception as e:
+            price_lookup[t] = {"error": str(e)}
+
+    summary = analyse_portfolio(positions, price_lookup)
+
+    return {
+        **state,
+        "portfolio_summary": summary,
+        "portfolio_done": True,
+        "messages": state.get("messages", []) + [
+            f"[Portfolio Agent] Analysed {len(positions)} positions across {len(tickers)} tickers."
+        ],
     }
 
 
