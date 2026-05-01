@@ -18,13 +18,22 @@ def get_stock_summary(ticker: str) -> Dict[str, Any]:
     Returns price, market cap, PE ratio, 52-week high/low, and more.
     """
     try:
+        if not ticker:
+            return {"error": "Ticker is required"}
         stock = yf.Ticker(ticker)
         info = stock.info
+
+        if not info:
+            return {"error": "No data returned", "ticker": ticker}
+
+        current_price = info.get("currentPrice") or info.get("regularMarketPrice")
+        if current_price is None:
+            return {"error": "Missing current price", "ticker": ticker}
 
         return {
             "ticker": ticker.upper(),
             "company_name": info.get("longName", "N/A"),
-            "current_price": info.get("currentPrice") or info.get("regularMarketPrice", 0),
+            "current_price": current_price,
             "previous_close": info.get("previousClose", 0),
             "open": info.get("open", 0),
             "day_high": info.get("dayHigh", 0),
@@ -56,11 +65,13 @@ def get_price_history(ticker: str, period: str = "1mo", interval: str = "1d") ->
     interval options: 1m, 5m, 15m, 1h, 1d, 1wk, 1mo
     """
     try:
+        if not ticker:
+            return [{"error": "Ticker is required"}]
         stock = yf.Ticker(ticker)
         hist = stock.history(period=period, interval=interval)
 
         if hist.empty:
-            return []
+            return [{"error": "No historical data available"}]
 
         records = []
         for date, row in hist.iterrows():

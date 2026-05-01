@@ -176,6 +176,29 @@ if result:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # Alerts + Watchlist
+    a1, a2 = st.columns([1, 1])
+    with a1:
+        st.markdown("<div class='sh'>🚨 Alerts</div>", unsafe_allow_html=True)
+        alerts = result.get("alerts", [])
+        if alerts:
+            for a in alerts:
+                sev = a.get("severity", "INFO")
+                st.markdown(f"<div class='rf'>[{sev}] {a.get('message', '')}</div>", unsafe_allow_html=True)
+        else:
+            st.markdown("<div class='ii'>✅ No alerts generated.</div>", unsafe_allow_html=True)
+
+    with a2:
+        st.markdown("<div class='sh'>📋 Watchlist</div>", unsafe_allow_html=True)
+        wl = result.get("watchlist", []) or stock.get("watchlist", [])
+        if wl:
+            df_wl = pd.DataFrame(wl)
+            st.dataframe(df_wl, use_container_width=True, hide_index=True)
+        else:
+            st.info("Watchlist data not available.")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
     # News + Report
     n1, n2 = st.columns([1,1])
     with n1:
@@ -191,6 +214,26 @@ if result:
                 st.markdown(rpt)
             st.download_button("⬇️ Download Report (.md)", data=rpt,
                 file_name=f"{ticker}_{datetime.now().strftime('%Y%m%d')}_marketpulse.md", mime="text/markdown")
+
+    portfolio = result.get("portfolio_summary", {})
+    if portfolio:
+        with st.expander("🧺 Portfolio Summary"):
+            if portfolio.get("error"):
+                st.error(portfolio.get("error"))
+            else:
+                st.write(f"Total Value: ${portfolio.get('total_market_value', 0):,.2f}")
+                st.write(
+                    f"Total P&L: ${portfolio.get('total_unrealised_pnl', 0):,.2f} "
+                    f"({portfolio.get('total_pnl_pct', 0):.2f}%)"
+                )
+                st.write(
+                    f"Diversification: {portfolio.get('diversification_label', 'N/A')} "
+                    f"({portfolio.get('diversification_score', 0)} / 100)"
+                )
+                if portfolio.get("portfolio_beta") is not None:
+                    st.write(f"Portfolio Beta: {portfolio.get('portfolio_beta')}")
+                if portfolio.get("positions"):
+                    st.dataframe(pd.DataFrame(portfolio.get("positions", [])), use_container_width=True)
 
     with st.expander("🤖 Agent Execution Log"):
         for m in result.get("messages",[]): st.code(m, language=None)
