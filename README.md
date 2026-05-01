@@ -193,19 +193,19 @@ pytest tests/test_integration.py -v
 
 ## 🌟 Features
 
-- ✅ **5 autonomous AI agents** orchestrated by LangGraph StateGraph
-- ✅ **Real-time stock data** (price, market cap, PE, beta, 52W range)
-- ✅ **Interactive candlestick charts** with Plotly
-- ✅ **LLM sentiment analysis** per article + overall score
-- ✅ **Technical indicators** — RSI, MACD, Bollinger Bands, SMA/EMA
-- ✅ **Risk flagging** with Buy/Hold/Sell/Avoid recommendation
-- ✅ **Downloadable markdown reports**
-- ✅ **FAISS vector store** for report memory
-- ✅ **DuckDuckGo search** for supplemental research
-- ✅ **Multi-page Streamlit UI** with dark theme
-- ✅ **CLI support** with depth control
-- ✅ **GitHub Actions CI** — lint, test, security
-- ✅ **Mock news fallback** — works without NewsAPI key
+-  **5 autonomous AI agents** orchestrated by LangGraph StateGraph
+-  **Real-time stock data** (price, market cap, PE, beta, 52W range)
+-  **Interactive candlestick charts** with Plotly
+-  **LLM sentiment analysis** per article + overall score
+-  **Technical indicators** — RSI, MACD, Bollinger Bands, SMA/EMA
+-  **Risk flagging** with Buy/Hold/Sell/Avoid recommendation
+-  **Downloadable markdown reports**
+-  **FAISS vector store** for report memory
+-  **DuckDuckGo search** for supplemental research
+-  **Multi-page Streamlit UI** with dark theme
+-  **CLI support** with depth control
+-  **GitHub Actions CI** — lint, test, security
+-  **Mock news fallback** — works without NewsAPI key
 
 
 
