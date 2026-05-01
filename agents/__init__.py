@@ -1,5 +1,5 @@
-from .news_agent import news_agent
 from .alert_engine import alert_agent
+from .news_agent import news_agent
 from .portfolio_tracker import portfolio_agent
 from .report_agent import report_agent
 from .risk_analyst_agent import risk_analyst_agent
