@@ -31,6 +31,13 @@ EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
 REPORT_OUTPUT_DIR: str = os.getenv("REPORT_OUTPUT_DIR", "./reports")
 os.makedirs(REPORT_OUTPUT_DIR, exist_ok=True)
 
+# ── Logging ───────────────────────────────────────────────────────────────────
+LOG_OUTPUT_DIR: str = os.getenv("LOG_OUTPUT_DIR", "./logs")
+os.makedirs(LOG_OUTPUT_DIR, exist_ok=True)
+
+# ── Validation ───────────────────────────────────────────────────────────────
+NASDAQ_TICKER_LIST_PATH: str = os.getenv("NASDAQ_TICKER_LIST_PATH", "./data/nasdaq_tickers.txt")
+
 # ── Misc ──────────────────────────────────────────────────────────────────────
 DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
 APP_TITLE: str = "MarketPulse — Autonomous Financial Intelligence Agent"

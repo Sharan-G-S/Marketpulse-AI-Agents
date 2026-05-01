@@ -7,6 +7,8 @@ and generates structured alert payloads ready for email or webhook delivery.
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from graph.state import MarketPulseState
+
 # ---------------------------------------------------------------------------
 # Default alert thresholds — can be overridden at runtime
 # ---------------------------------------------------------------------------
@@ -201,3 +203,34 @@ def get_alert_severity_counts(alerts: List[Dict[str, Any]]) -> Dict[str, int]:
 def has_critical_alerts(alerts: List[Dict[str, Any]]) -> bool:
     """Return True if any alert has CRITICAL severity."""
     return any(a["severity"] == SEVERITY_CRITICAL for a in alerts)
+
+
+# ---------------------------------------------------------------------------
+# Agent wrapper for LangGraph integration
+# ---------------------------------------------------------------------------
+
+
+def alert_agent(state: MarketPulseState) -> MarketPulseState:
+    """
+    Alert Engine Agent Node.
+
+    Evaluates the completed MarketPulseState against thresholds and
+    appends structured alert metadata to the shared state.
+    """
+    thresholds = state.get("alert_thresholds")
+    alerts = evaluate_alerts(state, thresholds=thresholds)
+    summary = format_alert_summary(alerts)
+    counts = get_alert_severity_counts(alerts)
+    critical = has_critical_alerts(alerts)
+
+    return {
+        **state,
+        "alerts": alerts,
+        "alert_summary": summary,
+        "alert_counts": counts,
+        "has_critical_alerts": critical,
+        "alerts_done": True,
+        "messages": state.get("messages", []) + [
+            f"[Alert Agent] Generated {len(alerts)} alerts (critical: {counts.get(SEVERITY_CRITICAL, 0)})."
+        ],
+    }

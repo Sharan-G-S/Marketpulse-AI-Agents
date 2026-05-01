@@ -173,6 +173,8 @@ pytest tests/test_integration.py -v
 | `NEWSAPI_KEY` | NewsAPI key | *(optional, mock if unset)* |
 | `DEFAULT_PERIOD` | yfinance history period | `1mo` |
 | `REPORT_OUTPUT_DIR` | Report save directory | `./reports` |
+| `LOG_OUTPUT_DIR` | JSON run logs directory | `./logs` |
+| `NASDAQ_TICKER_LIST_PATH` | Path to ticker list file | `./data/nasdaq_tickers.txt` |
 
 
 
@@ -211,6 +213,25 @@ pytest tests/test_integration.py -v
 
 MarketPulse is an **educational AI research tool** only.
 It does **not** constitute financial advice. Always consult a qualified financial advisor.
+
+
+## 🗺️ REST API Roadmap
+
+Planned upgrades for a programmatic API layer:
+
+- FastAPI service with `/analyze`, `/report/{id}`, and `/batch` endpoints
+- Async background jobs with status polling
+- JSON output format for reports + alert payloads
+- API key auth + basic rate limiting
+
+
+## 🧰 Troubleshooting
+
+- Missing API keys: set `OPENAI_API_KEY` or `GOOGLE_API_KEY` in `.env`.
+- NewsAPI errors: if `NEWSAPI_KEY` is unset, the system falls back to mock news.
+- Invalid ticker: ticker format is validated and can be checked against the NASDAQ list if provided.
+- No price history: yfinance may return empty data for illiquid or delisted symbols.
+- Logs: structured JSON outputs are saved under `LOG_OUTPUT_DIR` after each run.
 
 
 

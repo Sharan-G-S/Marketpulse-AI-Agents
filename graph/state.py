@@ -33,11 +33,30 @@ class MarketPulseState(TypedDict):
     price_history: List[Dict[str, Any]]  # [{date, open, high, low, close, volume}]
     stock_fetched: bool
 
+    # ── Watchlist Agent Output ────────────────────────────────────────────────
+    watchlist: List[Dict[str, Any]]      # [{ticker, price, change_pct, trend, ...}]
+    watchlist_done: bool
+
     # ── Risk Analyst Agent Output ─────────────────────────────────────────────
     risk_flags: List[str]                # Human-readable risk warnings
     risk_level: str                      # "Low" | "Medium" | "High" | "Critical"
     key_insights: List[str]              # Bullet-point insights
     risk_done: bool
+
+    # ── Portfolio Tracker Output ─────────────────────────────────────────────
+    portfolio_positions: List[Dict[str, Any]]  # [{ticker, quantity, avg_price, sector?}]
+    portfolio_summary: Dict[str, Any]          # Computed portfolio analytics
+    portfolio_done: bool
+
+    # ── Alert Engine Output ──────────────────────────────────────────────────
+    alerts: List[Dict[str, Any]]         # Structured alert payloads
+    alert_summary: str                   # Human-readable summary
+    alert_counts: Dict[str, int]         # Severity counts
+    has_critical_alerts: bool
+    alerts_done: bool
+
+    # ── Alert Configuration ──────────────────────────────────────────────────
+    alert_thresholds: Dict[str, Any]     # Optional overrides for alert thresholds
 
     # ── Report Agent Output ───────────────────────────────────────────────────
     final_report: str                    # Markdown-formatted investment report

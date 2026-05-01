@@ -4,6 +4,7 @@ ticker validation, and report export utilities.
 """
 
 from datetime import datetime, timezone
+import functools
 import os
 import re
 from typing import Optional
@@ -65,6 +66,29 @@ def validate_ticker(ticker: str) -> bool:
 def normalize_ticker(ticker: str) -> str:
     """Normalize a ticker input to uppercase, stripped of whitespace."""
     return ticker.strip().upper()
+
+
+@functools.lru_cache(maxsize=2)
+def load_ticker_list(path: str) -> set:
+    """Load ticker symbols from a newline-delimited file if present."""
+    if not path or not os.path.exists(path):
+        return set()
+    tickers = set()
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            sym = line.strip().upper()
+            if not sym or sym.startswith("#"):
+                continue
+            if validate_ticker(sym):
+                tickers.add(sym)
+    return tickers
+
+
+def validate_ticker_against_list(ticker: str, allowed: set) -> bool:
+    """Return True if list is empty or ticker exists in list."""
+    if not allowed:
+        return True
+    return ticker in allowed
 
 
 # ── Risk Color Coding ─────────────────────────────────────────────────────────
