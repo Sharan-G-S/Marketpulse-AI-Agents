@@ -9,11 +9,30 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Planned
 - PDF export for investment reports
-- Portfolio-level multi-ticker analysis
 - Email alert integration for risk threshold breaches
 - Historical report comparison view
 
 ---
+
+## [1.2.0] - 2026-05-03
+
+### Added
+- `agents/alert_engine.py` — AlertEngine class with AlertRule dataclasses for
+  price threshold (PRICE_ABOVE / PRICE_BELOW), RSI overbought/oversold, and
+  percentage-change rules; includes `AlertEngine.with_default_rules()` factory.
+- `agents/alert_helpers.py` — Alert formatting utilities: severity sorting,
+  grouping, per-alert Markdown formatting, and full digest builder.
+- `tools/csv_export.py` — CSV serialisation helpers for portfolio positions,
+  watchlist entries, and triggered alerts; supports in-memory strings (for
+  Streamlit download) and disk export via `save_csv_to_disk()`.
+- `ui/pages/3_Export_Data.py` — New Streamlit page: one-click CSV downloads for
+  portfolio, watchlist, and alert data from the current session.
+
+### Changed
+- `agents/watchlist_agent.py` — Integrated AlertEngine evaluation post-scan;
+  adds `rsi` / `rsi_signal` fields to watchlist entries; stores `alerts` list
+  and `alert_digest` string in shared state; history period extended to `1mo`
+  to ensure sufficient data for RSI computation.
 
 ## [1.1.0] - 2025-04-30
 

@@ -97,13 +97,15 @@ python main.py --ticker MSFT --company "Microsoft Corporation" --depth quick
 ```
 marketpulse-ai-agents/
 │
-├── agents/                     # Five autonomous AI agent modules
+├── agents/                     # Autonomous AI agent modules
 │   ├── news_agent.py           #   → Fetches financial news
 │   ├── sentiment_agent.py      #   → LLM sentiment analysis
 │   ├── stock_data_agent.py     #   → Real-time market data
 │   ├── risk_analyst_agent.py   #   → Risk flags & insights
 │   ├── report_agent.py         #   → Investment report generation
-│   └── watchlist_agent.py      #   → Multi-ticker market overview
+│   ├── watchlist_agent.py      #   → Multi-ticker market overview + alert evaluation
+│   ├── alert_engine.py         #   → Price, RSI & percent-change alert rules [NEW]
+│   └── alert_helpers.py        #   → Alert formatting & digest builder [NEW]
 │
 ├── graph/
 │   ├── state.py                # Shared TypedDict state schema
@@ -113,7 +115,8 @@ marketpulse-ai-agents/
 │   ├── stock_tools.py          # yfinance @tool wrappers
 │   ├── news_tools.py           # NewsAPI @tool wrappers
 │   ├── search_tools.py         # DuckDuckGo search tools
-│   └── indicators.py           # RSI, MACD, Bollinger Bands, MAs
+│   ├── indicators.py           # RSI, MACD, Bollinger Bands, MAs
+│   └── csv_export.py           # Portfolio, watchlist & alert CSV serialiser [NEW]
 │
 ├── memory/
 │   └── vector_store.py         # FAISS vector store for report history
@@ -128,7 +131,8 @@ marketpulse-ai-agents/
 │   ├── app.py                  # Main Streamlit dashboard
 │   └── pages/
 │       ├── 1_Report_History.py # Saved reports browser
-│       └── 2_About.py          # Project info & tech stack
+│       ├── 2_About.py          # Project info & tech stack
+│       └── 3_Export_Data.py    # CSV download page for portfolio/watchlist/alerts [NEW]
 │
 ├── tests/
 │   ├── conftest.py             # Shared pytest fixtures
@@ -204,6 +208,8 @@ pytest tests/test_integration.py -v
 - ✅ **CLI support** with depth control
 - ✅ **GitHub Actions CI** — lint, test, security
 - ✅ **Mock news fallback** — works without NewsAPI key
+- ✅ **Alert Engine** — price threshold, RSI, and percent-change alerts per ticker [NEW]
+- ✅ **CSV Data Export** — one-click download of portfolio, watchlist & alert data [NEW]
 
 
 
