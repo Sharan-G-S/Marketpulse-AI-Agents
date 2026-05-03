@@ -223,14 +223,220 @@ def alert_agent(state: MarketPulseState) -> MarketPulseState:
     counts = get_alert_severity_counts(alerts)
     critical = has_critical_alerts(alerts)
 
-    return {
-        **state,
-        "alerts": alerts,
-        "alert_summary": summary,
-        "alert_counts": counts,
-        "has_critical_alerts": critical,
-        "alerts_done": True,
-        "messages": state.get("messages", []) + [
-            f"[Alert Agent] Generated {len(alerts)} alerts (critical: {counts.get(SEVERITY_CRITICAL, 0)})."
-        ],
-    }
+    return {\n        **state,\n        "alerts": alerts,\n        "alert_summary": summary,\n        "alert_counts": counts,\n        "has_critical_alerts": critical,\n        "alerts_done": True,\n        "messages": state.get("messages", []) + [\n            f"[Alert Agent] Generated {len(alerts)} alerts (critical: {counts.get(SEVERITY_CRITICAL, 0)})."\n        ],\n    }
+
+
+# ---------------------------------------------------------------------------
+# Class-based per-ticker rule engine (watchlist / portfolio use-case)
+# ---------------------------------------------------------------------------
+#
+# The function-based evaluate_alerts() above operates on a completed
+# LangGraph state for a single ticker.  The classes below provide a
+# reusable rule registry that can monitor *many* tickers simultaneously —
+# designed for the watchlist and portfolio pages.
+# ---------------------------------------------------------------------------
+
+from dataclasses import dataclass, field as _field
+from enum import Enum
+
+
+class WatchlistAlertType(str, Enum):
+    """Rule categories supported by WatchlistAlertEngine."""
+
+    PRICE_ABOVE = "price_above"
+    PRICE_BELOW = "price_below"
+    RSI_OVERBOUGHT = "rsi_overbought"
+    RSI_OVERSOLD = "rsi_oversold"
+    PERCENT_CHANGE = "percent_change"
+
+
+@dataclass
+class AlertRule:
+    """
+    A configurable alert rule for a single ticker.
+
+    Attributes:
+        ticker:      Uppercase stock symbol, e.g. "AAPL".
+        alert_type:  One of the WatchlistAlertType values.
+        threshold:   Numeric boundary (price, RSI value, or percent).
+        label:       Optional human-readable description.
+        severity:    'info', 'warning', or 'critical'.
+        enabled:     Whether the rule is active.
+    """
+
+    ticker: str
+    alert_type: WatchlistAlertType
+    threshold: float
+    label: str = ""
+    severity: str = SEVERITY_WARNING
+    enabled: bool = True
+
+    def __post_init__(self) -> None:
+        self.ticker = self.ticker.upper()
+        if not self.label:
+            self.label = (
+                f"{self.ticker} {self.alert_type.value.replace('_', ' ').title()} "
+                f"@ {self.threshold}"
+            )
+
+
+@dataclass
+class WatchlistTriggeredAlert:
+    """Result produced when an AlertRule fires against live market data."""
+
+    rule: AlertRule
+    current_value: float
+    message: str
+    severity: str
+    triggered_at: str = _field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
+
+
+class WatchlistAlertEngine:
+    """
+    Rule-registry engine that evaluates many tickers in one pass.
+
+    Usage::
+
+        engine = WatchlistAlertEngine.with_default_rules(["AAPL", "TSLA"])
+        fired  = engine.evaluate(market_snapshot)
+    """
+
+    _DEFAULT_RSI_HIGH = 70.0
+    _DEFAULT_RSI_LOW = 30.0
+    _DEFAULT_CHG_WARN = 3.0
+    _DEFAULT_CHG_CRIT = 7.0
+
+    def __init__(self) -> None:
+        self._rules: List[AlertRule] = []
+
+    # -- rule management --------------------------------------------------
+
+    def add_rule(self, rule: AlertRule) -> None:
+        """Register a new AlertRule."""
+        self._rules.append(rule)
+
+    def remove_rules_for(self, ticker: str) -> None:
+        """Remove all rules for *ticker*."""
+        self._rules = [r for r in self._rules if r.ticker != ticker.upper()]
+
+    def list_rules(self) -> List[AlertRule]:
+        return list(self._rules)
+
+    def clear(self) -> None:
+        self._rules.clear()
+
+    # -- evaluation -------------------------------------------------------
+
+    def evaluate(
+        self,
+        market_snapshot: Dict[str, Dict[str, Any]],
+    ) -> List[WatchlistTriggeredAlert]:
+        """
+        Evaluate all enabled rules against a live market snapshot.
+
+        Args:
+            market_snapshot: Dict mapping ticker → data dict with optional
+                keys: ``current_price``, ``rsi``, ``change_pct``.
+
+        Returns:
+            List of WatchlistTriggeredAlert for all rules that fired.
+        """
+        fired: List[WatchlistTriggeredAlert] = []
+
+        for rule in self._rules:
+            if not rule.enabled:
+                continue
+            data = market_snapshot.get(rule.ticker, {})
+            if not data:
+                continue
+
+            result: Optional[WatchlistTriggeredAlert] = None
+
+            if rule.alert_type in (
+                WatchlistAlertType.PRICE_ABOVE,
+                WatchlistAlertType.PRICE_BELOW,
+            ):
+                price = data.get("current_price")
+                if price is not None:
+                    result = self._check_price(rule, float(price))
+
+            elif rule.alert_type in (
+                WatchlistAlertType.RSI_OVERBOUGHT,
+                WatchlistAlertType.RSI_OVERSOLD,
+            ):
+                rsi = data.get("rsi")
+                if rsi is not None:
+                    result = self._check_rsi(rule, float(rsi))
+
+            elif rule.alert_type == WatchlistAlertType.PERCENT_CHANGE:
+                chg = data.get("change_pct")
+                if chg is not None:
+                    result = self._check_change(rule, float(chg))
+
+            if result is not None:
+                fired.append(result)
+
+        return fired
+
+    # -- private helpers --------------------------------------------------
+
+    @staticmethod
+    def _check_price(
+        rule: AlertRule, price: float
+    ) -> Optional[WatchlistTriggeredAlert]:
+        if rule.alert_type == WatchlistAlertType.PRICE_ABOVE and price > rule.threshold:
+            direction = "above"
+        elif rule.alert_type == WatchlistAlertType.PRICE_BELOW and price < rule.threshold:
+            direction = "below"
+        else:
+            return None
+        msg = (
+            f"[{rule.severity.upper()}] {rule.ticker} price ${price:.2f} "
+            f"is {direction} threshold ${rule.threshold:.2f}."
+        )
+        return WatchlistTriggeredAlert(rule=rule, current_value=price, message=msg, severity=rule.severity)
+
+    @staticmethod
+    def _check_rsi(
+        rule: AlertRule, rsi: float
+    ) -> Optional[WatchlistTriggeredAlert]:
+        if rule.alert_type == WatchlistAlertType.RSI_OVERBOUGHT and rsi > rule.threshold:
+            label = f"overbought (RSI {rsi:.1f} > {rule.threshold})"
+        elif rule.alert_type == WatchlistAlertType.RSI_OVERSOLD and rsi < rule.threshold:
+            label = f"oversold (RSI {rsi:.1f} < {rule.threshold})"
+        else:
+            return None
+        msg = f"[{rule.severity.upper()}] {rule.ticker} is {label}."
+        return WatchlistTriggeredAlert(rule=rule, current_value=rsi, message=msg, severity=rule.severity)
+
+    @staticmethod
+    def _check_change(
+        rule: AlertRule, change_pct: float
+    ) -> Optional[WatchlistTriggeredAlert]:
+        if abs(change_pct) < rule.threshold:
+            return None
+        direction = "surged" if change_pct > 0 else "dropped"
+        msg = (
+            f"[{rule.severity.upper()}] {rule.ticker} has {direction} "
+            f"{change_pct:+.2f}% — exceeds ±{rule.threshold:.1f}% threshold."
+        )
+        return WatchlistTriggeredAlert(rule=rule, current_value=change_pct, message=msg, severity=rule.severity)
+
+    # -- factory ----------------------------------------------------------
+
+    @classmethod
+    def with_default_rules(cls, tickers: List[str]) -> "WatchlistAlertEngine":
+        """
+        Build a WatchlistAlertEngine pre-loaded with RSI and
+        percentage-change rules for each ticker in *tickers*.
+        """
+        engine = cls()
+        for t in tickers:
+            t = t.upper()
+            engine.add_rule(AlertRule(t, WatchlistAlertType.RSI_OVERBOUGHT, cls._DEFAULT_RSI_HIGH, severity=SEVERITY_WARNING))
+            engine.add_rule(AlertRule(t, WatchlistAlertType.RSI_OVERSOLD, cls._DEFAULT_RSI_LOW, severity=SEVERITY_WARNING))
+            engine.add_rule(AlertRule(t, WatchlistAlertType.PERCENT_CHANGE, cls._DEFAULT_CHG_WARN, severity=SEVERITY_INFO))
+            engine.add_rule(AlertRule(t, WatchlistAlertType.PERCENT_CHANGE, cls._DEFAULT_CHG_CRIT, severity=SEVERITY_CRITICAL))
+        return engine
