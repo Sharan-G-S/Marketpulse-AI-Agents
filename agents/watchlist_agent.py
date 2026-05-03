@@ -1,11 +1,17 @@
 """
 Watchlist Agent — Monitors multiple tickers simultaneously
 and generates a comparative market intelligence summary.
+
+Integrates WatchlistAlertEngine to evaluate RSI and percentage-change
+alert rules per ticker after each scan, storing results in shared state.
 """
 
 from typing import Any, Dict, List
 
+from agents.alert_engine import WatchlistAlertEngine
+from agents.alert_helpers import format_alert_digest
 from graph.state import MarketPulseState
+from tools.indicators import get_all_indicators
 from tools.stock_tools import calculate_price_change, get_price_history, get_stock_summary
 
 WATCHLIST_DEFAULTS = ["AAPL", "MSFT", "GOOGL", "TSLA", "AMZN", "NVDA", "META", "NFLX"]
@@ -22,6 +28,7 @@ def watchlist_agent(state: MarketPulseState) -> MarketPulseState:
     print(f"\n[📋 Watchlist Agent] Building market watchlist context...")
 
     watchlist_data: List[Dict[str, Any]] = []
+    market_snapshot: Dict[str, Dict[str, Any]] = {}
 
     # Include the main ticker + a small sample of top stocks for context
     scan_list = list({ticker}.union(set(WATCHLIST_DEFAULTS[:5])))
@@ -29,10 +36,11 @@ def watchlist_agent(state: MarketPulseState) -> MarketPulseState:
     for t in scan_list:
         try:
             summary = get_stock_summary.invoke({"ticker": t})
-            history = get_price_history.invoke({"ticker": t, "period": "5d", "interval": "1d"})
+            history = get_price_history.invoke({"ticker": t, "period": "1mo", "interval": "1d"})
             metrics = calculate_price_change.invoke({"price_history": history})
+            indicators = get_all_indicators(history)
 
-            watchlist_data.append({
+            entry = {
                 "ticker": t,
                 "price": summary.get("current_price", 0),
                 "change_pct": metrics.get("change_pct", 0),
@@ -40,26 +48,55 @@ def watchlist_agent(state: MarketPulseState) -> MarketPulseState:
                 "market_cap": summary.get("market_cap", 0),
                 "pe_ratio": summary.get("pe_ratio", "N/A"),
                 "sector": summary.get("sector", "N/A"),
-            })
+                "rsi": indicators.get("rsi"),
+                "rsi_signal": indicators.get("rsi_signal"),
+            }
+            watchlist_data.append(entry)
+
+            market_snapshot[t] = {
+                "current_price": summary.get("current_price"),
+                "change_pct": metrics.get("change_pct"),
+                "rsi": indicators.get("rsi"),
+            }
         except Exception as e:
             watchlist_data.append({"ticker": t, "error": str(e)})
 
     # Sort by absolute price change
     watchlist_data.sort(key=lambda x: abs(x.get("change_pct", 0)), reverse=True)
 
-    print(f"[📋 Watchlist Agent] ✅ Scanned {len(watchlist_data)} tickers.")
+    # Run WatchlistAlertEngine against collected market snapshot
+    alert_engine = WatchlistAlertEngine.with_default_rules(scan_list)
+    triggered = alert_engine.evaluate(market_snapshot)
+    alert_records = [
+        {
+            "ticker": a.rule.ticker,
+            "type": a.rule.alert_type.value,
+            "severity": a.severity,
+            "message": a.message,
+            "current_value": a.current_value,
+            "triggered_at": a.triggered_at,
+        }
+        for a in triggered
+    ]
+    alert_digest = format_alert_digest(triggered)  # type: ignore[arg-type]
+    n_alerts = len(triggered)
+
+    print(f"[📋 Watchlist Agent] ✅ Scanned {len(watchlist_data)} tickers. "
+          f"{n_alerts} watchlist alert(s) triggered.")
 
     return {
         **state,
         "messages": state.get("messages", []) + [
-            f"[Watchlist Agent] Scanned {len(watchlist_data)} tickers for market context."
+            f"[Watchlist Agent] Scanned {len(watchlist_data)} tickers. "
+            f"{n_alerts} alert(s) triggered."
         ],
         "watchlist": watchlist_data,
         "watchlist_done": True,
-        # Store in stock_summary for downstream access
         "stock_summary": {
             **state.get("stock_summary", {}),
             "watchlist": watchlist_data,
+            "watchlist_alerts": alert_records,
+            "alert_digest": alert_digest,
         },
     }
 
