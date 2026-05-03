@@ -15,6 +15,31 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.2.0] - 2026-05-03
+
+### Added
+- `agents/alert_helpers.py` — Alert formatting utilities: severity sorting,
+  grouping by level, per-alert Markdown rendering with severity icons, and
+  a full grouped digest builder (`format_alert_digest`).
+- `agents/alert_engine.py` — Extended with class-based multi-ticker rule
+  engine: `WatchlistAlertType` enum, `AlertRule` dataclass, `WatchlistTriggeredAlert`
+  dataclass, and `WatchlistAlertEngine` with `evaluate()` and
+  `with_default_rules()` factory; complements the existing function-based
+  LangGraph agent evaluator.
+- `tools/csv_export.py` — CSV serialisation for portfolio positions, watchlist
+  entries, and alert records; supports in-memory strings (Streamlit download)
+  and timestamped disk export via `save_csv_to_disk()`.
+- `ui/pages/3_Export_Data.py` — New Streamlit sidebar page: one-click CSV
+  downloads for portfolio, watchlist, and alert data from the current session.
+
+### Changed
+- `agents/watchlist_agent.py` — Integrated `WatchlistAlertEngine` post-scan;
+  enriches watchlist entries with `rsi` and `rsi_signal` fields; stores
+  `watchlist_alerts` and `alert_digest` in shared state; price history period
+  extended from `5d` to `1mo` for accurate RSI computation.
+
+---
+
 ## [1.1.0] - 2025-04-30
 
 ### Added
