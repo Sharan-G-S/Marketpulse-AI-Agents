@@ -223,7 +223,17 @@ def alert_agent(state: MarketPulseState) -> MarketPulseState:
     counts = get_alert_severity_counts(alerts)
     critical = has_critical_alerts(alerts)
 
-    return {\n        **state,\n        "alerts": alerts,\n        "alert_summary": summary,\n        "alert_counts": counts,\n        "has_critical_alerts": critical,\n        "alerts_done": True,\n        "messages": state.get("messages", []) + [\n            f"[Alert Agent] Generated {len(alerts)} alerts (critical: {counts.get(SEVERITY_CRITICAL, 0)})."\n        ],\n    }
+    return {
+        **state,
+        "alerts": alerts,
+        "alert_summary": summary,
+        "alert_counts": counts,
+        "has_critical_alerts": critical,
+        "alerts_done": True,
+        "messages": state.get("messages", []) + [
+            f"[Alert Agent] Generated {len(alerts)} alerts (critical: {counts.get(SEVERITY_CRITICAL, 0)})."
+        ],
+    }
 
 
 # ---------------------------------------------------------------------------
