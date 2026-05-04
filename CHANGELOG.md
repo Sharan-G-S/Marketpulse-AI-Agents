@@ -9,9 +9,42 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Planned
 - PDF export for investment reports
-- Portfolio-level multi-ticker analysis
 - Email alert integration for risk threshold breaches
 - Historical report comparison view
+
+---
+
+## [1.3.0] - 2026-05-04
+
+### Added
+- `tools/sector_heatmap.py` — Sector aggregation engine: `compute_heat_score()`
+  (weighted 50% price, 30% RSI, 20% breadth), `aggregate_sector()`,
+  `build_sector_heatmap()` returning sectors sorted hottest-first, and
+  `get_top_and_bottom_sectors()` helper.
+- `tools/heatmap_helpers.py` — Heatmap display utilities: `heat_score_emoji()`,
+  `momentum_badge()`, `format_heatmap_table()` (Markdown), `format_heatmap_summary()`
+  (breadth narrative), and `heatmap_to_dicts()` for DataFrame/CSV output.
+- `ui/pages/4_Sector_Heatmap.py` — New Streamlit page: live sector heatmap with
+  customisable ticker universe, colour-coded heat score table, breadth metrics,
+  summary narrative, and Markdown download.
+- `agents/comparison_agent.py` — Stock Comparison Agent: five-dimension composite
+  scoring (momentum 25%, valuation 20%, technical 25%, stability 15%, 52W range
+  15%), `compare_tickers()` ranking function, `score_label()` classifier.
+- `agents/comparison_helpers.py` — Comparison display utilities: `score_bar()`,
+  `score_emoji()`, `label_badge()`, `format_comparison_table()`,
+  `format_rankings_summary()`, `format_score_breakdown_table()`.
+- `ui/pages/5_Compare_Stocks.py` — New Streamlit page: 2–5 ticker comparison
+  with winner banner, metric tiles, fundamentals table, score breakdown,
+  medal-ranked summary, and Markdown download buttons.
+- `tests/test_sector_heatmap.py` — 31 unit tests covering all public functions
+  in the sector heatmap module.
+- `tests/test_comparison_agent.py` — 42 unit tests covering all scoring
+  functions, `compute_composite_score()`, and `compare_tickers()`.
+
+### Fixed
+- `agents/alert_engine.py` — Repaired corrupted `return` statement in
+  `alert_agent()` where escaped `\n` sequences were stored as literals,
+  causing a `SyntaxError` on Python 3.12.
 
 ---
 
