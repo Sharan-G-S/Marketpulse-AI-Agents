@@ -14,6 +14,34 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.4.0] - 2026-05-05
+
+### Added
+- `tools/price_history_export.py` — OHLCV price history serialiser:
+  `enrich_ohlcv()` adds daily_change, daily_change_pct, typical_price, and
+  range columns; `export_price_history_csv()` and `export_price_history_json()`
+  produce download-ready output; `price_history_stats()` computes period
+  high/low, avg close, avg volume, best/worst day.
+- `agents/screener_agent.py` — Gainers & Losers screener: 45-ticker default
+  universe, `classify_mover()`, `mover_emoji()`, `run_screener()` ranking top-N
+  gainers/losers/volatile/flat groups, and `screener_breadth()` advance-decline
+  ratio computation.
+- `tools/screener_helpers.py` — Screener display utilities: per-group Markdown
+  tables, full screener report, breadth summary card, and flat dicts for
+  DataFrame display.
+- `ui/pages/6_Screener.py` — New Streamlit Screener page: customisable ticker
+  universe, progress-bar scan, four metric tiles, tabbed mover groups, and
+  full Markdown report download.
+- `tools/sentiment_trend.py` — Sentiment trend engine: `group_by_date()`,
+  `build_sentiment_trend()` daily aggregation, `simulate_trend_from_snapshot()`
+  with deterministic LCG jitter, `trend_direction()` half-period comparison,
+  and `trend_summary_text()` narrative generator.
+- `ui/pages/7_Sentiment_Trend.py` — New Streamlit Sentiment Trend page: line
+  chart of avg_score, bar chart of article breakdown, trend direction metric,
+  narrative insight card, and CSV download.
+
+---
+
 ## [1.3.0] - 2026-05-04
 
 ### Added
