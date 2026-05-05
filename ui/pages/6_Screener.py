@@ -16,8 +16,8 @@ from tools.screener_helpers import (
     format_breadth_summary,
     format_screener_report,
     format_screener_table,
-    screener_entries_to_dicts,
     mover_emoji,
+    screener_entries_to_dicts,
 )
 
 # ---------------------------------------------------------------------------
@@ -104,8 +104,8 @@ st.caption(f"Universe: **{len(universe)}** tickers")
 # ---------------------------------------------------------------------------
 
 if run_btn:
-    from tools.stock_tools import calculate_price_change, get_price_history, get_stock_summary
     from tools.indicators import get_all_indicators
+    from tools.stock_tools import calculate_price_change, get_price_history, get_stock_summary
 
     entries = []
     prog = st.progress(0, text="Scanning market…")

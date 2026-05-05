@@ -8,9 +8,8 @@ and a composite heat score (0–100) that indicates sector strength.
 No LLM call required — purely quantitative.
 """
 
-from typing import Any, Dict, List, Optional
 import statistics
-
+from typing import Any, Dict, List, Optional
 
 # ---------------------------------------------------------------------------
 # Type aliases

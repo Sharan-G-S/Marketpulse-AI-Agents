@@ -9,7 +9,6 @@ from typing import Any, Dict, List
 
 from tools.sector_heatmap import SectorStats, get_top_and_bottom_sectors
 
-
 # ---------------------------------------------------------------------------
 # Color / emoji helpers
 # ---------------------------------------------------------------------------

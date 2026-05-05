@@ -7,7 +7,6 @@ from a ComparisonResult produced by agents/comparison_agent.py.
 
 from typing import Any, Dict, List, Optional
 
-
 # ---------------------------------------------------------------------------
 # Score display helpers
 # ---------------------------------------------------------------------------

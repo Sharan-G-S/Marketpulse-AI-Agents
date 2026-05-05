@@ -8,11 +8,10 @@ No LLM required — pure data serialisation.
 """
 
 import csv
+from datetime import datetime, timezone
 import io
 import json
-from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
-
 
 # ---------------------------------------------------------------------------
 # Column definitions

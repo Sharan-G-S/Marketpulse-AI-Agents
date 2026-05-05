@@ -246,7 +246,8 @@ def alert_agent(state: MarketPulseState) -> MarketPulseState:
 # designed for the watchlist and portfolio pages.
 # ---------------------------------------------------------------------------
 
-from dataclasses import dataclass, field as _field
+from dataclasses import dataclass
+from dataclasses import field as _field
 from enum import Enum
 
 

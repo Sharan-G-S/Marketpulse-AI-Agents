@@ -7,11 +7,10 @@ Streamlit download buttons) and as files on disk.
 """
 
 import csv
+from datetime import datetime, timezone
 import io
 import os
-from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
-
 
 # ---------------------------------------------------------------------------
 # Column definitions

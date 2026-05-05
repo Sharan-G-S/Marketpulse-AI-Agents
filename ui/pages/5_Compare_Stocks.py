@@ -109,8 +109,8 @@ elif len(tickers_to_compare) > 5:
 # ---------------------------------------------------------------------------
 
 if run_btn and 2 <= len(tickers_to_compare) <= 5:
+    from tools.indicators import compute_macd, get_all_indicators
     from tools.stock_tools import calculate_price_change, get_price_history, get_stock_summary
-    from tools.indicators import get_all_indicators, compute_macd
 
     tickers_data = []
     progress = st.progress(0, text="Fetching data…")

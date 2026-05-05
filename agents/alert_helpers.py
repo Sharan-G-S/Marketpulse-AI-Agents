@@ -9,7 +9,6 @@ from typing import Dict, List
 
 from agents.alert_engine import AlertSeverity, TriggeredAlert
 
-
 # ---------------------------------------------------------------------------
 # Severity ordering for sorting
 # ---------------------------------------------------------------------------

@@ -11,7 +11,6 @@ Designed to run as a standalone utility or as part of the Streamlit UI.
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-
 # ---------------------------------------------------------------------------
 # Default ticker universe — S&P 500 large-caps across major sectors
 # ---------------------------------------------------------------------------

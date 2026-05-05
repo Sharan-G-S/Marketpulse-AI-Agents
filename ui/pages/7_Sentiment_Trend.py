@@ -6,15 +6,15 @@ Uses real sentiment data from the current session if available, or
 synthesises a plausible trend from a single-day snapshot for demo purposes.
 """
 
-import streamlit as st
 import pandas as pd
+import streamlit as st
 
 from tools.sentiment_trend import (
     build_sentiment_trend,
+    sentiment_label,
     simulate_trend_from_snapshot,
     trend_direction,
     trend_summary_text,
-    sentiment_label,
 )
 
 # ---------------------------------------------------------------------------
@@ -101,12 +101,13 @@ if run_btn and ticker:
     else:
         # Fetch fresh news + sentiment for the ticker
         try:
-            from tools.news_tools import fetch_news
             from agents.sentiment_agent import score_articles
+            from tools.news_tools import fetch_news
 
             articles = fetch_news(ticker, max_results=30)
             # Simulate dates spread across the window (articles may lack dates)
-            from datetime import datetime, timedelta, timezone as _tz
+            from datetime import datetime, timedelta
+            from datetime import timezone as _tz
             today = datetime.now(_tz.utc).date()
             for i, art in enumerate(articles):
                 if not art.get("date") and not art.get("publishedAt"):

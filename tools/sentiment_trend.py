@@ -11,7 +11,6 @@ No LLM calls — pure aggregation of already-computed sentiment_scores.
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-
 # ---------------------------------------------------------------------------
 # Type aliases
 # ---------------------------------------------------------------------------

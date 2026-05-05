@@ -9,7 +9,6 @@ from typing import Any, Dict, List
 
 from agents.screener_agent import ScreenerEntry, ScreenerResult, mover_emoji
 
-
 # ---------------------------------------------------------------------------
 # Markdown table
 # ---------------------------------------------------------------------------

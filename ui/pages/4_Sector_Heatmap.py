@@ -12,8 +12,8 @@ from agents.watchlist_agent import WATCHLIST_DEFAULTS
 from tools.heatmap_helpers import (
     format_heatmap_summary,
     format_heatmap_table,
-    heatmap_to_dicts,
     heat_score_emoji,
+    heatmap_to_dicts,
 )
 from tools.sector_heatmap import build_sector_heatmap
 
@@ -99,8 +99,8 @@ if run_btn or st.session_state.get("heatmap_data"):
 
     if run_btn:
         # Fetch fresh data
-        from tools.stock_tools import calculate_price_change, get_price_history, get_stock_summary
         from tools.indicators import get_all_indicators
+        from tools.stock_tools import calculate_price_change, get_price_history, get_stock_summary
 
         snapshots = []
         progress = st.progress(0, text="Fetching market data…")
