@@ -3,60 +3,113 @@ Alert Engine helpers — formatting and summary utilities.
 
 Provides human-readable formatting for triggered alerts,
 severity-based grouping, and a plain-text digest builder.
+
+Works with both:
+  - WatchlistTriggeredAlert objects (class-based rule engine)
+  - plain alert dicts (function-based evaluate_alerts output)
 """
 
-from typing import Dict, List
+from typing import Any, Dict, List, Union
 
-from agents.alert_engine import AlertSeverity, TriggeredAlert
+from agents.alert_engine import (
+    SEVERITY_CRITICAL,
+    SEVERITY_INFO,
+    SEVERITY_WARNING,
+    WatchlistTriggeredAlert,
+)
 
 # ---------------------------------------------------------------------------
-# Severity ordering for sorting
+# Type alias for either alert format
 # ---------------------------------------------------------------------------
 
-_SEVERITY_ORDER: Dict[AlertSeverity, int] = {
-    AlertSeverity.CRITICAL: 0,
-    AlertSeverity.WARNING: 1,
-    AlertSeverity.INFO: 2,
+AnyAlert = Union[WatchlistTriggeredAlert, Dict[str, Any]]
+
+# ---------------------------------------------------------------------------
+# Severity helpers
+# ---------------------------------------------------------------------------
+
+_SEVERITY_ORDER: Dict[str, int] = {
+    SEVERITY_CRITICAL: 0,
+    SEVERITY_WARNING: 1,
+    SEVERITY_INFO: 2,
+}
+
+_SEVERITY_ICONS: Dict[str, str] = {
+    SEVERITY_CRITICAL: "🔴",
+    SEVERITY_WARNING: "🟡",
+    SEVERITY_INFO: "🔵",
 }
 
 
-def sort_alerts_by_severity(alerts: List[TriggeredAlert]) -> List[TriggeredAlert]:
+def _get_severity(alert: AnyAlert) -> str:
+    """Extract severity string from either alert format."""
+    if isinstance(alert, WatchlistTriggeredAlert):
+        return str(alert.severity).upper()
+    return str(alert.get("severity", SEVERITY_INFO)).upper()
+
+
+def _get_message(alert: AnyAlert) -> str:
+    """Extract message from either alert format."""
+    if isinstance(alert, WatchlistTriggeredAlert):
+        return alert.message
+    return str(alert.get("message", ""))
+
+
+def _get_timestamp(alert: AnyAlert) -> str:
+    """Extract ISO timestamp from either alert format."""
+    if isinstance(alert, WatchlistTriggeredAlert):
+        return str(alert.triggered_at)
+    return str(alert.get("timestamp", ""))
+
+
+# ---------------------------------------------------------------------------
+# Sorting and grouping
+# ---------------------------------------------------------------------------
+
+def sort_alerts_by_severity(alerts: List[AnyAlert]) -> List[AnyAlert]:
     """Return alerts sorted from most to least severe."""
-    return sorted(alerts, key=lambda a: _SEVERITY_ORDER.get(a.severity, 99))
+    return sorted(alerts, key=lambda a: _SEVERITY_ORDER.get(_get_severity(a), 99))
 
 
 def group_alerts_by_severity(
-    alerts: List[TriggeredAlert],
-) -> Dict[str, List[TriggeredAlert]]:
+    alerts: List[AnyAlert],
+) -> Dict[str, List[AnyAlert]]:
     """
-    Group a list of TriggeredAlert objects by severity label.
+    Group a list of alerts by severity label.
 
     Returns:
         Dict with keys 'critical', 'warning', 'info'.
     """
-    groups: Dict[str, List[TriggeredAlert]] = {
+    groups: Dict[str, List[AnyAlert]] = {
         "critical": [],
         "warning": [],
         "info": [],
     }
     for alert in alerts:
-        groups[alert.severity.value].append(alert)
+        key = _get_severity(alert).lower()
+        if key in groups:
+            groups[key].append(alert)
+        else:
+            groups["info"].append(alert)
     return groups
 
 
-def format_alert_markdown(alert: TriggeredAlert) -> str:
-    """Format a single TriggeredAlert as a Markdown list item."""
-    icons = {
-        AlertSeverity.CRITICAL: "🔴",
-        AlertSeverity.WARNING: "🟡",
-        AlertSeverity.INFO: "🔵",
-    }
-    icon = icons.get(alert.severity, "⚪")
-    ts = alert.triggered_at[:19].replace("T", " ")  # YYYY-MM-DD HH:MM:SS
-    return f"- {icon} **[{alert.severity.value.upper()}]** {alert.message}  \n  *(evaluated at {ts} UTC)*"
+# ---------------------------------------------------------------------------
+# Formatting
+# ---------------------------------------------------------------------------
+
+def format_alert_markdown(alert: AnyAlert) -> str:
+    """Format a single alert as a Markdown list item."""
+    severity = _get_severity(alert)
+    icon = _SEVERITY_ICONS.get(severity, "⚪")
+    ts = _get_timestamp(alert)
+    ts_short = ts[:19].replace("T", " ") if ts else ""
+    msg = _get_message(alert)
+    suffix = f"  \n  *(evaluated at {ts_short} UTC)*" if ts_short else ""
+    return f"- {icon} **[{severity}]** {msg}{suffix}"
 
 
-def format_alert_digest(alerts: List[TriggeredAlert]) -> str:
+def format_alert_digest(alerts: List[AnyAlert]) -> str:
     """
     Build a full plain-text / Markdown digest from a list of alerts.
 
@@ -98,14 +151,17 @@ def format_alert_digest(alerts: List[TriggeredAlert]) -> str:
     return "\n".join(lines)
 
 
-def ticker_alert_summary(alerts: List[TriggeredAlert]) -> Dict[str, int]:
+def ticker_alert_summary(alerts: List[AnyAlert]) -> Dict[str, int]:
     """
     Return a dict mapping ticker → number of alerts triggered.
 
-    Useful for highlighting tickers that need immediate attention.
+    Works with both WatchlistTriggeredAlert objects and plain dicts.
     """
     summary: Dict[str, int] = {}
     for alert in alerts:
-        t = alert.rule.ticker
+        if isinstance(alert, WatchlistTriggeredAlert):
+            t = alert.rule.ticker
+        else:
+            t = str(alert.get("ticker", "UNKNOWN"))
         summary[t] = summary.get(t, 0) + 1
     return summary
