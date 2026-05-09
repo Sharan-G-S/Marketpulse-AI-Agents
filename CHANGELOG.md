@@ -14,6 +14,45 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.5.0] - 2026-05-09
+
+### Added
+- `tools/risk_metrics.py` — Portfolio risk engine: `compute_daily_returns()`,
+  `annualised_return()`, `annualised_volatility()`, `sharpe_ratio()`,
+  `sortino_ratio()`, `max_drawdown()`, `value_at_risk_95()`, `calmar_ratio()`,
+  `risk_label()`, and `compute_risk_metrics()` full-bundle function.
+- `tools/risk_metrics_helpers.py` — Risk display utilities: `sharpe_badge()`,
+  `mdd_badge()`, `var_badge()`, `format_risk_table()`,
+  `format_multi_risk_table()`, `risk_metrics_to_dict()`.
+- `ui/pages/8_Risk_Dashboard.py` — New Streamlit Risk Dashboard: multi-ticker
+  Sharpe/Sortino/Max Drawdown/VaR/Calmar comparison with per-ticker drill-down
+  tabs, CSV and Markdown download buttons.
+- `tools/watchlist_alerts.py` — Watchlist alert engine: six alert types
+  (PRICE_CHANGE, PRICE_ABOVE, PRICE_BELOW, RSI_OVERBOUGHT, RSI_OVERSOLD,
+  VOLUME_SPIKE), severity-sorted output, per-ticker threshold overrides.
+- `ui/pages/9_Watchlist_Alerts.py` — New Streamlit Watchlist Alerts page:
+  custom threshold controls, live scan, colour-coded alert cards, CSV export.
+- `tools/indicator_signals.py` — Indicator signal helpers: `rsi_signal()`,
+  `macd_signal()`, `ma_signal()`, `bollinger_signal()`, `overall_signal()`,
+  `format_indicator_table()`, `format_multi_indicator_table()`.
+- `ui/pages/10_Indicators.py` — New Streamlit Technical Indicator Dashboard:
+  vote-based overall signal tiles, side-by-side comparison table,
+  per-ticker tabs with RSI/MACD/MA/Bollinger Bands, raw data table.
+- `tests/test_risk_metrics.py` — 28 unit tests for all risk metric functions.
+- `tests/test_indicator_signals.py` — 24 unit tests for all signal helpers.
+
+### Changed
+- `config/settings.py` — Added 14 new env-var-backed constants for risk
+  (RISK_FREE_RATE, RISK_DEFAULT_PERIOD, RISK_MAX_TICKERS), watchlist alerts
+  (WATCHLIST_PRICE_CHANGE_PCT, WATCHLIST_RSI_OVERBOUGHT, WATCHLIST_RSI_OVERSOLD,
+  WATCHLIST_VOLUME_SPIKE), screener (SCREENER_TOP_N, SCREENER_DEFAULT_UNIVERSE),
+  and indicator parameters (RSI_PERIOD, MACD_FAST, MACD_SLOW, MACD_SIGNAL,
+  BB_PERIOD, BB_STD).
+- `docs/quickref.md` — Extended with v1.5.0 page table, API snippets for all
+  three new modules, environment variable reference, and test commands.
+
+---
+
 ## [1.4.0] - 2026-05-05
 
 ### Added
