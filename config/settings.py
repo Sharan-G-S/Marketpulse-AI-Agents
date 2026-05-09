@@ -41,3 +41,26 @@ NASDAQ_TICKER_LIST_PATH: str = os.getenv("NASDAQ_TICKER_LIST_PATH", "./data/nasd
 # ── Misc ──────────────────────────────────────────────────────────────────────
 DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
 APP_TITLE: str = "MarketPulse — Autonomous Financial Intelligence Agent"
+
+# ── Risk Metrics ──────────────────────────────────────────────────────────────
+RISK_FREE_RATE: float = float(os.getenv("RISK_FREE_RATE", "0.05"))   # annual decimal
+RISK_DEFAULT_PERIOD: str = os.getenv("RISK_DEFAULT_PERIOD", "6mo")
+RISK_MAX_TICKERS: int = int(os.getenv("RISK_MAX_TICKERS", "5"))
+
+# ── Watchlist Alerts ──────────────────────────────────────────────────────────
+WATCHLIST_PRICE_CHANGE_PCT: float = float(os.getenv("WATCHLIST_PRICE_CHANGE_PCT", "5.0"))
+WATCHLIST_RSI_OVERBOUGHT: float = float(os.getenv("WATCHLIST_RSI_OVERBOUGHT", "75.0"))
+WATCHLIST_RSI_OVERSOLD: float = float(os.getenv("WATCHLIST_RSI_OVERSOLD", "25.0"))
+WATCHLIST_VOLUME_SPIKE: float = float(os.getenv("WATCHLIST_VOLUME_SPIKE", "2.0"))
+
+# ── Screener ──────────────────────────────────────────────────────────────────
+SCREENER_TOP_N: int = int(os.getenv("SCREENER_TOP_N", "5"))
+SCREENER_DEFAULT_UNIVERSE: str = os.getenv("SCREENER_DEFAULT_UNIVERSE", "builtin")
+
+# ── Technical Indicators ──────────────────────────────────────────────────────
+RSI_PERIOD: int = int(os.getenv("RSI_PERIOD", "14"))
+MACD_FAST: int = int(os.getenv("MACD_FAST", "12"))
+MACD_SLOW: int = int(os.getenv("MACD_SLOW", "26"))
+MACD_SIGNAL: int = int(os.getenv("MACD_SIGNAL_PERIOD", "9"))
+BB_PERIOD: int = int(os.getenv("BB_PERIOD", "20"))
+BB_STD: float = float(os.getenv("BB_STD", "2.0"))
