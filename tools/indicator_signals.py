@@ -174,3 +174,14 @@ def format_multi_indicator_table(entries: List[Dict[str, Any]]) -> str:
         f"{header}{sep}\n"
         f"{price_row}\n{rsi_row}\n{macd_row}\n{ma_row}\n{over_row}"
     )
+
+# ── Public API ────────────────────────────────────────────────────────────────
+__all__ = [
+    "rsi_signal",
+    "macd_signal",
+    "ma_signal",
+    "bollinger_signal",
+    "overall_signal",
+    "format_indicator_table",
+    "format_multi_indicator_table",
+]

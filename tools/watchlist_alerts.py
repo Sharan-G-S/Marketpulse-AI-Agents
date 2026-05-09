@@ -201,3 +201,14 @@ def watchlist_alert_summary(alerts: List[AlertRecord]) -> Dict[str, Any]:
         status = "🟢 All watchlist tickers within normal ranges"
 
     return {"counts": counts, "status": status, "total": len(alerts)}
+
+# ── Public API ────────────────────────────────────────────────────────────────
+__all__ = [
+    "DEFAULT_WATCHLIST_THRESHOLDS",
+    "SEVERITY_CRITICAL",
+    "SEVERITY_WARNING",
+    "SEVERITY_INFO",
+    "evaluate_watchlist_entry",
+    "evaluate_watchlist",
+    "watchlist_alert_summary",
+]

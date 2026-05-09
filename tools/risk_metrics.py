@@ -248,3 +248,19 @@ def compute_risk_metrics(
         "risk_label":     risk_label(sh, mdd, vol),
         "risk_free_rate": risk_free_rate,
     }
+
+# ── Public API ───────────────────────────────────────────────────────────────
+__all__ = [
+    "TRADING_DAYS_PER_YEAR",
+    "DEFAULT_RISK_FREE_RATE",
+    "compute_daily_returns",
+    "annualised_return",
+    "annualised_volatility",
+    "sharpe_ratio",
+    "sortino_ratio",
+    "max_drawdown",
+    "value_at_risk_95",
+    "calmar_ratio",
+    "risk_label",
+    "compute_risk_metrics",
+]
