@@ -257,3 +257,14 @@ def upcoming_earnings_list(
             except ValueError:
                 pass
     return sorted(result, key=lambda x: x["earnings_date"])
+
+# ── Public API ────────────────────────────────────────────────────────────────
+__all__ = [
+    "US_MARKET_HOLIDAYS_2026",
+    "extract_earnings_date",
+    "extract_ex_dividend_date",
+    "build_ticker_events",
+    "build_market_calendar",
+    "format_calendar_markdown",
+    "upcoming_earnings_list",
+]

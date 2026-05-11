@@ -190,3 +190,11 @@ def sector_allocation(
         sector = sm.get(p["ticker"], "Other")
         allocation[sector] = allocation.get(sector, 0.0) + p["market_value"]
     return allocation
+
+# ── Public API ────────────────────────────────────────────────────────────────
+__all__ = [
+    "compute_position",
+    "compute_portfolio",
+    "top_holdings",
+    "sector_allocation",
+]

@@ -222,3 +222,12 @@ def digest_sentiment_summary(entries: List[DigestEntry]) -> Dict[str, Any]:
         "dominant_sentiment": dominant,
         "total":            len(entries),
     }
+
+# ── Public API ────────────────────────────────────────────────────────────────
+__all__ = [
+    "deduplicate_articles",
+    "rank_articles",
+    "build_digest_entries",
+    "format_news_digest_markdown",
+    "digest_sentiment_summary",
+]
