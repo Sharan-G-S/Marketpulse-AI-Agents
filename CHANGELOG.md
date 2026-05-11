@@ -14,6 +14,46 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.6.0] - 2026-05-11
+
+### Added
+- `tools/portfolio_performance.py` — Pure-Python portfolio P&L engine:
+  `compute_position()` (MV, cost basis, unrealised P&L, weight %),
+  `compute_portfolio()` (two-pass aggregation with best/worst performer),
+  `top_holdings()`, `sector_allocation()`.
+- `ui/pages/11_Portfolio_Performance.py` — Streamlit Portfolio Performance page:
+  CSV-style position entry, live price fetch, P&L metric tiles, position
+  breakdown table, top-holdings bar chart, CSV download.
+- `tools/news_digest.py` — News digest formatter: Jaccard-based deduplication,
+  sentiment-weighted ranking, DigestEntry builder, Markdown renderer,
+  `digest_sentiment_summary()`.
+- `ui/pages/12_News_Digest.py` — Streamlit News Digest page: full pipeline
+  (fetch → deduplicate → rank → format), article cards, sentiment stats,
+  Markdown download.
+- `tools/market_calendar.py` — Market calendar tool: earnings/ex-dividend
+  extraction from yfinance summaries, US market holiday list,
+  `build_market_calendar()`, `format_calendar_markdown()`,
+  `upcoming_earnings_list()`.
+- `ui/pages/13_Market_Calendar.py` — Streamlit Market Calendar page: colour-coded
+  event cards, earnings countdown table, full calendar DataFrame, Markdown download.
+- `tests/test_new_tools.py` — 34 unit tests for portfolio_performance,
+  news_digest, and market_calendar.
+
+### Fixed
+- `agents/alert_helpers.py` — Resolved `ImportError: cannot import name
+  'AlertSeverity'` that caused 4 CI test failures across all Python versions.
+  Replaced with correct `WatchlistTriggeredAlert` + string severity constants.
+- `agents/screener_agent.py` — Fixed two bugs in breadth/screener logic:
+  (1) `run_screener()` losers list sliced before filtering, silently producing
+  fewer than top_n results; now filter-then-slice to match gainers pattern.
+  (2) `screener_breadth()` all-flat breadth_label returned "Strong Advance"
+  when advances==0 and declines==0 due to `0 >= 0*2` being True; added
+  explicit zero guard.
+- `tools/__init__.py` — Cleaned up multi-line import formatting and added
+  usage comments for lazy-importable v1.4.0+ modules.
+
+---
+
 ## [1.5.0] - 2026-05-09
 
 ### Added
