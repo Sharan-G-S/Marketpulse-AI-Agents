@@ -118,11 +118,10 @@ def run_screener(
     """
     valid = [e for e in entries if e.get("change_pct") is not None]
 
-    # Sort by change % descending for gainers, ascending for losers
+    # Bug fix: filter first, then slice — ensures top_n genuine gainers/losers
     by_change = sorted(valid, key=lambda x: x["change_pct"], reverse=True)
     gainers   = [e for e in by_change if e["change_pct"] > 0][:top_n]
-    losers    = sorted(valid, key=lambda x: x["change_pct"])[:top_n]
-    losers    = [e for e in losers if e["change_pct"] < 0]
+    losers    = [e for e in reversed(by_change) if e["change_pct"] < 0][:top_n]
 
     # Most volatile = highest absolute move regardless of direction
     volatile = sorted(valid, key=lambda x: abs(x["change_pct"]), reverse=True)[:top_n]
@@ -158,7 +157,16 @@ def screener_breadth(entries: List[ScreenerEntry]) -> Dict[str, Any]:
     avg_chg   = round(sum(e["change_pct"] for e in valid) / len(valid), 2)
     ad_ratio  = round(advances / declines, 2) if declines else float("inf")
 
-    if advances >= declines * 2:
+    # Bug fix: guard against all-flat scenario (advances==0, declines==0)
+    # Previously 'advances >= declines * 2' evaluated True when both are 0
+    # because 0 >= 0 is True, producing misleading 'Strong Advance' label.
+    if advances == 0 and declines == 0:
+        breadth_label = "Balanced ⚪"
+    elif declines == 0:
+        breadth_label = "Strong Advance 🟢"
+    elif advances == 0:
+        breadth_label = "Strong Decline 🔴"
+    elif advances >= declines * 2:
         breadth_label = "Strong Advance 🟢"
     elif advances > declines:
         breadth_label = "Moderate Advance ⬆️"
