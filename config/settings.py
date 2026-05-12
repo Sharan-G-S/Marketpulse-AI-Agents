@@ -64,3 +64,20 @@ MACD_SLOW: int = int(os.getenv("MACD_SLOW", "26"))
 MACD_SIGNAL: int = int(os.getenv("MACD_SIGNAL_PERIOD", "9"))
 BB_PERIOD: int = int(os.getenv("BB_PERIOD", "20"))
 BB_STD: float = float(os.getenv("BB_STD", "2.0"))
+# ── Portfolio & Diversification ───────────────────────────────────────────────
+PORTFOLIO_MAX_POSITIONS: int = int(os.getenv("PORTFOLIO_MAX_POSITIONS", "50"))
+DIVERSIFICATION_CAP_POSITIONS: int = int(os.getenv("DIVERSIFICATION_CAP_POSITIONS", "20"))
+
+# ── MA Crossover ──────────────────────────────────────────────────────────────
+MA_FAST_PERIOD: int = int(os.getenv("MA_FAST_PERIOD", "50"))
+MA_SLOW_PERIOD: int = int(os.getenv("MA_SLOW_PERIOD", "200"))
+MA_USE_EMA: bool = os.getenv("MA_USE_EMA", "false").lower() == "true"
+
+# ── Earnings Surprise ─────────────────────────────────────────────────────────
+EARNINGS_STRONG_BEAT_PCT: float = float(os.getenv("EARNINGS_STRONG_BEAT_PCT", "5.0"))
+EARNINGS_BEAT_PCT: float = float(os.getenv("EARNINGS_BEAT_PCT", "1.0"))
+EARNINGS_MISS_PCT: float = float(os.getenv("EARNINGS_MISS_PCT", "-1.0"))
+
+# ── Data Quality ──────────────────────────────────────────────────────────────
+DQ_MIN_BARS: int = int(os.getenv("DQ_MIN_BARS", "5"))
+DQ_MAX_CHANGE_PCT: float = float(os.getenv("DQ_MAX_CHANGE_PCT", "50.0"))
