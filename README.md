@@ -1,4 +1,4 @@
-# 📈 MarketPulse — Autonomous Financial Intelligence Agent
+# 📈 MarketPulse - Autonomous Financial Intelligence Agent
 
 [![CI](https://github.com/Sharan-G-S/Marketpulse-AI-Agents/actions/workflows/ci.yml/badge.svg)](https://github.com/Sharan-G-S/Marketpulse-AI-Agents/actions)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
