@@ -133,3 +133,57 @@ def sentiment_agent(state: MarketPulseState) -> MarketPulseState:
             "error": str(e),
             "messages": [f"[Sentiment Agent] Error during analysis: {e}"],
         }
+
+# ── Lightweight heuristic scorer (no LLM) ────────────────────────────────────
+
+_BULLISH_KEYWORDS = {
+    "beat", "beats", "surge", "surged", "gain", "gains", "rally", "rallies",
+    "record", "growth", "profit", "upgrade", "strong", "positive", "rises",
+    "jumps", "outperform", "exceeds", "bullish", "breakout",
+}
+
+_BEARISH_KEYWORDS = {
+    "miss", "misses", "drop", "drops", "fell", "fall", "loss", "losses",
+    "decline", "declines", "downgrade", "weak", "negative", "lawsuit",
+    "investigation", "crash", "bearish", "warning", "cuts", "layoffs",
+    "recall", "fraud", "penalty", "fine",
+}
+
+
+def score_articles(articles: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Lightweight heuristic sentiment scorer for a list of news articles.
+
+    Assigns a sentiment label and score to each article based on keyword
+    matching in the title and description — no LLM required.
+
+    Args:
+        articles: List of article dicts with at least a 'title' key.
+
+    Returns:
+        New list of article dicts with 'sentiment' and 'score' fields added.
+    """
+    scored = []
+    for art in articles:
+        text  = " ".join([
+            str(art.get("title", "")),
+            str(art.get("description", "")),
+        ]).lower()
+        words = set(text.split())
+
+        bull_hits = len(words & _BULLISH_KEYWORDS)
+        bear_hits = len(words & _BEARISH_KEYWORDS)
+
+        if bull_hits > bear_hits:
+            sentiment = "Bullish"
+            score     = min(1.0, 0.3 + bull_hits * 0.1)
+        elif bear_hits > bull_hits:
+            sentiment = "Bearish"
+            score     = max(-1.0, -0.3 - bear_hits * 0.1)
+        else:
+            sentiment = "Neutral"
+            score     = 0.0
+
+        scored.append({**art, "sentiment": sentiment, "score": round(score, 3)})
+
+    return scored
