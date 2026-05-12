@@ -175,3 +175,34 @@ def mock_stock_summary():
         "change_pct": 1.9,
         "trend": "Bullish",
     }
+
+
+# ── v1.7.0 fixtures ──────────────────────────────────────────────────────────
+
+import pytest
+
+
+@pytest.fixture
+def sample_ohlcv_bars():
+    """10 clean OHLCV bars for data quality and MA crossover tests."""
+    return [
+        {"date": f"2026-05-{i:02d}", "open": 100.0 + i, "high": 110.0 + i,
+         "low": 95.0 + i, "close": 105.0 + i, "volume": 1_000_000}
+        for i in range(1, 11)
+    ]
+
+
+@pytest.fixture
+def sample_positions():
+    """4-position equally weighted portfolio with sector map."""
+    return [
+        {"ticker": "AAPL", "qty": 10, "avg_cost": 150.0},
+        {"ticker": "JPM",  "qty": 5,  "avg_cost": 180.0},
+        {"ticker": "JNJ",  "qty": 8,  "avg_cost": 165.0},
+        {"ticker": "XOM",  "qty": 6,  "avg_cost": 100.0},
+    ]
+
+
+@pytest.fixture
+def sample_sector_map():
+    return {"AAPL": "Tech", "JPM": "Finance", "JNJ": "Healthcare", "XOM": "Energy"}
