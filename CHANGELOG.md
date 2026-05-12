@@ -14,6 +14,29 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.7.0] - 2026-05-12
+
+### Added
+- `tools/diversification_scorer.py` — HHI-based portfolio diversification score (0-100, A-F grade): `compute_hhi()`, `sector_entropy()`, `score_diversification()` with actionable rebalancing suggestions.
+- `tools/earnings_surprise.py` — EPS/revenue surprise tracker: 5-tier verdict (Strong Beat→Strong Miss), multi-period trend analysis, Markdown table formatter.
+- `tools/ma_crossover.py` — Moving Average Crossover engine: SMA/EMA series, Golden/Death Cross detection, `ma_crossover_summary()` with current trend signal.
+- `tools/data_quality.py` — OHLCV and stock summary data quality validator: per-bar OHLC consistency checks, 0-100 quality score, Markdown issue report.
+- `tools/price_alerts_cli.py` — CLI alert scanner: argparse interface, ANSI colour output, JSON mode for CI pipelines, exit code 1 on critical alerts.
+- `ui/pages/14_Earnings_Surprise.py` — Earnings Surprise Tracker page: CSV entry, per-ticker trend summary, results table, CSV download.
+- `ui/pages/15_MA_Crossover.py` — MA Crossover Signals page: fast/slow period inputs, EMA toggle, colour-coded signal badges, crossover event tables.
+- `docs/api_reference.md` — Comprehensive API reference for all 10 tool modules (function signatures, return types, schema docs).
+- `tests/test_v17_tools.py` — 57 unit tests for all four new modules (all green).
+
+### Fixed
+- `agents/sentiment_agent.py` — Added missing `score_articles()` function (LLM-free keyword heuristic scorer). Two pages (`7_Sentiment_Trend`, `12_News_Digest`) were importing it causing `ImportError`.
+- `tools/risk_metrics_helpers.py` — Fixed `TypeError: 'NoneType' * int` in `format_risk_table()` and `risk_metrics_to_dict()` when metric values are `None` (short price histories). Guard via `(value or 0.0)`.
+- `config/settings.py` — Added 11 new env-var constants for portfolio, MA crossover, earnings surprise, and data quality feature modules.
+
+### Refactored
+- Added `_MODULE` and `_VERSION = "1.7.0"` metadata constants to all 5 new v1.7.0 tool modules for runtime introspection.
+
+---
+
 ## [1.6.0] - 2026-05-11
 
 ### Added
