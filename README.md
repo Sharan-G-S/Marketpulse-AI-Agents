@@ -51,6 +51,54 @@ Enter any stock ticker → 5 AI agents collaborate autonomously → Full investm
 
 
 
+## ✨ Feature Suite (v1.7.0)
+
+### Analytics Tools
+
+| Module | Description |
+|--------|-------------|
+| `tools/risk_metrics.py` | Sharpe, Sortino, VaR 95%, Max Drawdown, Calmar ratios |
+| `tools/portfolio_performance.py` | Position P&L, market value, weight %, best/worst performer |
+| `tools/diversification_scorer.py` | HHI + sector entropy composite diversification score (A-F) |
+| `tools/earnings_surprise.py` | EPS/revenue surprise %, verdict tiers, multi-period trend |
+| `tools/ma_crossover.py` | SMA/EMA series, Golden Cross & Death Cross detection |
+| `tools/watchlist_alerts.py` | Price/RSI/volume threshold alerts for watchlists |
+| `tools/news_digest.py` | Deduplication, sentiment ranking, Markdown digest |
+| `tools/market_calendar.py` | Earnings dates, ex-dividends, US holiday overlay |
+| `tools/data_quality.py` | OHLCV bar validation, quality scoring (0-100), issues report |
+| `tools/indicator_signals.py` | RSI, MACD, MA, Bollinger signal wrappers |
+
+### Streamlit Pages (15 total)
+
+| Page | Feature |
+|------|---------|
+| `1_Report_History` | Past report browser |
+| `3_Export_Data` | CSV data export |
+| `4_Sector_Heatmap` | Sector heat map |
+| `5_Compare_Stocks` | Multi-ticker comparison |
+| `6_Screener` | Gainers/losers screener |
+| `7_Sentiment_Trend` | Sentiment over time |
+| `8_Risk_Dashboard` | Portfolio risk metrics |
+| `9_Watchlist_Alerts` | Live price/RSI/volume alerts |
+| `10_Indicators` | Technical indicator dashboard |
+| `11_Portfolio_Performance` | Real-time P&L and weights |
+| `12_News_Digest` | Deduplicated, ranked news digest |
+| `13_Market_Calendar` | Earnings/dividend/holiday calendar |
+| `14_Earnings_Surprise` | EPS surprise tracker |
+| `15_MA_Crossover` | Golden/Death Cross detector |
+
+### CLI Tools
+
+```bash
+# Run watchlist price/RSI alerts from the terminal
+python tools/price_alerts_cli.py --tickers AAPL TSLA NVDA --pct 3.0
+python tools/price_alerts_cli.py --tickers AAPL --json   # JSON output for pipelines
+python tools/price_alerts_cli.py --help
+```
+
+
+
+
 ## 🚀 Quick Start
 
 ### Prerequisites
