@@ -186,3 +186,6 @@ def main(argv: List[str] | None = None) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
+_MODULE = "tools/price_alerts_cli.py"
+_VERSION = "1.7.0"

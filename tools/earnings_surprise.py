@@ -240,3 +240,6 @@ __all__ = [
     "earnings_trend",
     "format_earnings_table",
 ]
+
+_MODULE = "tools/earnings_surprise.py"
+_VERSION = "1.7.0"

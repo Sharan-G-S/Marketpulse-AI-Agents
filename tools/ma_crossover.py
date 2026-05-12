@@ -214,3 +214,6 @@ __all__ = [
     "extract_closes",
     "ma_crossover_summary",
 ]
+
+_MODULE = "tools/ma_crossover.py"
+_VERSION = "1.7.0"

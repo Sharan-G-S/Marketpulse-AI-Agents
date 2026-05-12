@@ -239,3 +239,6 @@ __all__ = [
     "sector_entropy",
     "score_diversification",
 ]
+
+_MODULE = "tools/diversification_scorer.py"
+_VERSION = "1.7.0"

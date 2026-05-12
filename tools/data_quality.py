@@ -234,3 +234,6 @@ __all__ = [
     "validate_stock_summary",
     "format_validation_report",
 ]
+
+_MODULE = "tools.data_quality"
+_VERSION = "1.7.0"
