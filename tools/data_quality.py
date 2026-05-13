@@ -69,20 +69,31 @@ def validate_bar(bar: Dict[str, Any], index: int) -> List[Issue]:
         except (ValueError, TypeError):
             issues.append(_error(f"{prefix}.{field}", f"'{field}' is not numeric (got {val!r})."))
 
-    # OHLC consistency
+    # OHLC consistency — only check close/open range when high >= low is sane
     try:
-        o = float(bar.get("open", 0))
-        h = float(bar.get("high", 0))
-        l = float(bar.get("low", 0))
+        o = float(bar.get("open",  0))
+        h = float(bar.get("high",  0))
+        l = float(bar.get("low",   0))
         c = float(bar.get("close", 0))
         if h < l:
             issues.append(_error(prefix, f"High ({h}) < Low ({l}) — impossible OHLC."))
-        if c > h or c < l:
-            issues.append(_warning(prefix, f"Close ({c}) outside High-Low range [{l}, {h}]."))
-        if o > h or o < l:
-            issues.append(_warning(prefix, f"Open ({o}) outside High-Low range [{l}, {h}]."))
+        else:
+            # These checks are only meaningful when the H/L range is valid
+            if c > h or c < l:
+                issues.append(_warning(prefix, f"Close ({c}) outside High-Low range [{l}, {h}]."))
+            if o > h or o < l:
+                issues.append(_warning(prefix, f"Open ({o}) outside High-Low range [{l}, {h}]."))
     except (ValueError, TypeError):
-        pass  # already flagged above
+        pass  # numeric errors already flagged above
+
+    # Volume sanity (warning only — some tickers have legitimate zero-volume bars)
+    vol = bar.get("volume")
+    if vol is not None:
+        try:
+            if float(vol) < 0:
+                issues.append(_warning(f"{prefix}.volume", f"Volume is negative ({vol})."))
+        except (ValueError, TypeError):
+            issues.append(_warning(f"{prefix}.volume", "Volume is not numeric."))
 
     return issues
 
