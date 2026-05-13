@@ -41,7 +41,7 @@ Aggregated stats for one sector:
         "losers":          int,
         "heat_score":      float,   # 0–100
         "momentum":        str,     # "Strong Buy" / "Bullish" / "Neutral" / "Bearish" / "Strong Sell"
-        "tickers":         list[str],
+        "tickers":         List[str],
     }
 """
 
