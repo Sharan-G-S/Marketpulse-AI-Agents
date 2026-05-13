@@ -14,6 +14,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.7.1] - 2026-05-13
+
+### Fixed
+- `tools/news_tools.py` — Added missing `fetch_news(ticker, max_results)` plain-function wrapper.
+  Two Streamlit pages (`12_News_Digest`, `7_Sentiment_Trend`) imported it causing `ImportError`.
+- `tools/sector_heatmap.py` — Changed `list[str]` type annotation to `List[str]` for Python <3.10 compatibility.
+- `tools/price_alerts_cli.py` — Changed pipe-union `List[str] | None` to `Optional[List[str]]` for Python <3.10 compatibility; added `Optional` to typing imports.
+- `tools/data_quality.py` — Fixed OHLC consistency checks firing spurious close/open warnings when `high < low` error already present; added negative volume validation.
+- `tools/diversification_scorer.py` — Fixed `ZeroDivisionError` when all `market_value=0` (falls back to equal weighting); fixed `ValueError` from `max()` on empty `sector_weights` dict; added early-exit for empty portfolio.
+- `tools/earnings_surprise.py` — Changed `tuple[float, float]` return annotation to `Tuple[float, float]` (typing module) for Python <3.10 compatibility; documented negative-estimated-EPS behavior.
+
+---
+
 ## [1.7.0] - 2026-05-12
 
 ### Added
