@@ -11,7 +11,7 @@ import argparse
 from datetime import datetime, timezone
 import json
 import sys
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from tools.watchlist_alerts import (
     DEFAULT_WATCHLIST_THRESHOLDS,
@@ -147,7 +147,7 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
-def main(argv: List[str] | None = None) -> int:
+def main(argv: Optional[List[str]] = None) -> int:
     parser = build_parser()
     args   = parser.parse_args(argv)
 
