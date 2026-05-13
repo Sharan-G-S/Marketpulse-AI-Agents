@@ -166,11 +166,23 @@ def ma_crossover_summary(
         crossover_events, and ma_type.
     """
     closes = extract_closes(price_history)
+    ma_type = "EMA" if use_ema else "SMA"
     if not closes:
-        return {"current_signal": "Insufficient Data", "crossover_events": []}
+        # Return a complete sentinel dict so callers don't hit KeyError on any
+        # expected key (e.g. fast_value, slow_value, n_bars used in the UI).
+        return {
+            "ma_type":          ma_type,
+            "fast_period":      fast_period,
+            "slow_period":      slow_period,
+            "fast_value":       None,
+            "slow_value":       None,
+            "current_signal":   "Insufficient Data",
+            "last_crossover":   None,
+            "crossover_events": [],
+            "n_bars":           0,
+        }
 
     ma_fn = compute_ema if use_ema else compute_sma
-    ma_type = "EMA" if use_ema else "SMA"
 
     fast_series = ma_fn(closes, fast_period)
     slow_series = ma_fn(closes, slow_period)
