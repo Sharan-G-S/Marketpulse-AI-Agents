@@ -8,7 +8,7 @@ the result into beat/miss/meet tiers with a % surprise score.
 No LLM required — pure arithmetic.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 # ── Type aliases ──────────────────────────────────────────────────────────────
 
@@ -59,18 +59,26 @@ SURPRISE_THRESHOLDS = {
 def compute_eps_surprise(
     reported: float,
     estimated: float,
-) -> tuple[float, float]:
+) -> Tuple[float, float]:
     """
     Compute EPS surprise percentage and absolute delta.
 
     Args:
         reported:  Actual reported EPS.
         estimated: Analyst consensus EPS estimate.
+                   May be negative (loss-making companies) — abs() is used
+                   in the denominator so direction is preserved correctly.
 
     Returns:
         (surprise_pct, surprise_abs) tuple.
         surprise_pct = (reported - estimated) / |estimated| * 100
         Returns (0.0, abs_delta) if estimated is 0 to avoid division by zero.
+
+    Examples:
+        >>> compute_eps_surprise(2.20, 2.00)   # +10% beat
+        (10.0, 0.2)
+        >>> compute_eps_surprise(-0.10, -0.20) # beat on loss: reported -0.10 vs est -0.20
+        (50.0, 0.1)
     """
     surprise_abs = round(reported - estimated, 4)
     if estimated == 0:
