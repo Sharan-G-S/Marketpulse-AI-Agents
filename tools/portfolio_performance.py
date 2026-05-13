@@ -79,7 +79,16 @@ def compute_position(
     market_value  = qty * current_price
     cost_basis    = qty * avg_cost
     unrealised_pl = market_value - cost_basis
-    unrealised_pct = ((current_price - avg_cost) / avg_cost * 100) if avg_cost else 0.0
+
+    # When avg_cost is 0 (e.g. gifted/bonus shares), the percentage return is
+    # mathematically undefined (infinite). Return None instead of 0.0 to avoid
+    # misleading callers into thinking the position has broken even.
+    unrealised_pct: Optional[float]
+    if avg_cost == 0:
+        unrealised_pct = None
+    else:
+        unrealised_pct = round((current_price - avg_cost) / avg_cost * 100, 4)
+
     weight = (market_value / total_market_value * 100) if total_market_value else 0.0
 
     return {
@@ -90,7 +99,7 @@ def compute_position(
         "market_value":   round(market_value, 2),
         "cost_basis":     round(cost_basis, 2),
         "unrealised_pl":  round(unrealised_pl, 2),
-        "unrealised_pct": round(unrealised_pct, 4),
+        "unrealised_pct": unrealised_pct,
         "weight_pct":     round(weight, 4),
     }
 
@@ -139,7 +148,9 @@ def compute_portfolio(
     total_pl     = sum(r["unrealised_pl"] for r in results)
     total_ret    = ((total_mv - total_cost) / total_cost * 100) if total_cost else 0.0
 
-    sorted_by_pct = sorted(results, key=lambda r: r["unrealised_pct"])
+    # Use (pct or 0.0) so None values from zero-cost positions sort as 0.0
+    # rather than crashing the comparison operator.
+    sorted_by_pct = sorted(results, key=lambda r: (r["unrealised_pct"] or 0.0))
     best  = sorted_by_pct[-1]["ticker"] if results else "—"
     worst = sorted_by_pct[0]["ticker"]  if results else "—"
 
