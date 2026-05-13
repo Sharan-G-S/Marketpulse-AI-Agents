@@ -176,11 +176,28 @@ def score_diversification(
     sm = sector_map or {}
     n  = len(positions)
 
+    # Guard: empty portfolio — return zero score immediately
+    if n == 0:
+        return {
+            "score": 0.0, "grade": "F", "sector_score": 0.0,
+            "concentration_score": 0.0, "count_score": 0.0,
+            "hhi": 1.0, "n_sectors": 0, "n_positions": 0,
+            "dominant_sector": "N/A", "dominant_weight_pct": 0.0,
+            "interpretation": "No positions — portfolio is empty.",
+            "suggestions": ["Add positions to begin diversification analysis."],
+        }
+
     # Compute weights from market_value if not provided
     if weights is None:
-        mvs = [float(p.get("market_value", 1.0)) for p in positions]
-        total_mv = sum(mvs) or 1.0
-        weights = [mv / total_mv for mv in mvs]
+        # Use abs() to handle edge cases of negative values; default to 1.0
+        # if market_value is missing or zero so all positions share equal weight.
+        mvs = [max(0.0, float(p.get("market_value") or 1.0)) for p in positions]
+        total_mv = sum(mvs)
+        if total_mv == 0:
+            # All positions have zero market value — fall back to equal weighting
+            weights = [1.0 / n] * n
+        else:
+            weights = [mv / total_mv for mv in mvs]
 
     # Compute sector_weights if not provided
     if sector_weights is None:
@@ -201,9 +218,13 @@ def score_diversification(
     composite = round(0.40 * sec_score + 0.40 * conc_score + 0.20 * cnt_score, 2)
     grade     = _grade(composite)
 
-    # Dominant sector
-    dominant_sector = max(sector_weights, key=sector_weights.get) if sector_weights else "Unknown"  # type: ignore
-    dominant_pct    = round(sector_weights.get(dominant_sector, 0.0) * 100, 2)
+    # Dominant sector — safe when sector_weights may be empty
+    if sector_weights:
+        dominant_sector = max(sector_weights, key=lambda k: sector_weights[k])  # type: ignore[arg-type]
+        dominant_pct    = round(sector_weights[dominant_sector] * 100, 2)
+    else:
+        dominant_sector = "Unknown"
+        dominant_pct    = 0.0
 
     n_sectors = len(sector_weights)
     tips      = _suggestions(n, n_sectors, dominant_pct, hhi, grade)
