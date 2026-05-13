@@ -66,9 +66,11 @@ class TestComputePosition:
         r = compute_position({"ticker": "msft", "qty": 1, "avg_cost": 100.0}, 100.0)
         assert r["ticker"] == "MSFT"
 
-    def test_zero_avg_cost_no_crash(self):
+    def test_zero_avg_cost_returns_none_pct(self):
+        """avg_cost=0 means return % is undefined (infinite) — should be None not 0.0."""
         r = compute_position({"ticker": "X", "qty": 1, "avg_cost": 0.0}, 50.0)
-        assert r["unrealised_pct"] == 0.0
+        assert r["unrealised_pct"] is None
+        assert r["unrealised_pl"] == pytest.approx(50.0)  # P&L still computed correctly
 
 
 class TestComputePortfolio:
