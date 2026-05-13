@@ -47,19 +47,31 @@ for col, (icon, name, desc) in zip(cols, agents):
 st.markdown("---")
 st.markdown("### 🛠️ Tech Stack")
 stack = [
-    ("🔗", "LangGraph",   "Multi-agent state machine orchestration"),
-    ("⛓️", "LangChain",   "LLM chains, prompts, tool wrappers"),
+    ("🔗", "LangGraph",    "Multi-agent state machine orchestration"),
+    ("⛓️", "LangChain",    "LLM chains, prompts, tool wrappers"),
     ("🤖", "OpenAI/Gemini","GPT-4o-mini or Gemini 1.5 Flash LLM backbone"),
-    ("📊", "yfinance",    "Free real-time & historical stock data"),
-    ("📰", "NewsAPI",     "Financial news article fetching"),
-    ("🖥️", "Streamlit",   "Interactive dashboard UI"),
-    ("📉", "Plotly",      "Candlestick charts & visualizations"),
-    ("🧠", "FAISS",       "Vector store for memory & retrieval"),
+    ("📊", "yfinance",     "Free real-time & historical stock data"),
+    ("📰", "NewsAPI",      "Financial news article fetching"),
+    ("🖥️", "Streamlit",    "Interactive dashboard UI"),
+    ("📉", "Plotly",       "Candlestick charts & visualizations"),
+    ("🧠", "FAISS",        "Vector store for memory & retrieval"),
 ]
 cols2 = st.columns(4)
 for i, (icon, name, desc) in enumerate(stack):
     with cols2[i % 4]:
         st.markdown(f"<div class='tech-card'><div style='font-size:1.5rem;'>{icon}</div><div class='tech-name'>{name}</div><div class='tech-desc'>{desc}</div></div>", unsafe_allow_html=True)
+
+st.markdown("---")
+st.markdown("### 📦 Version History")
+st.markdown("""
+| Version | Date | Highlights |
+|---------|------|------------|
+| **v1.7.1** | 2026-05-13 | Bug fixes: `fetch_news()` missing, `_jaccard` empty-title, `_parse_date` validation, `unrealised_pct=None` for zero-cost, MA Crossover `KeyError`, `digest_sentiment_summary` empty entries |
+| **v1.7.0** | 2026-05-12 | New tools: Diversification Scorer, Earnings Surprise, MA Crossover, Data Quality Validator, Price Alerts CLI; 2 new Streamlit pages; API reference docs |
+| **v1.6.0** | 2026-05-11 | Portfolio Performance tracker, News Digest formatter, Market Calendar |
+| **v1.5.0** | 2026-05-10 | Watchlist Alerts, RSI/MACD indicator signals, Sector Heatmap |
+| **v1.0.0** | 2026-04-28 | Initial release: 5-agent LangGraph pipeline |
+""")
 
 st.markdown("---")
 st.markdown("> ⚠️ **Disclaimer:** MarketPulse is for educational purposes only and does not constitute financial advice.")
