@@ -14,6 +14,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.7.2] - 2026-05-13
+
+### Fixed
+- `tools/news_digest.py` — `_jaccard()` returned `1.0` when both titles were empty, causing all subsequent blank-title articles to be deduped out silently. Fixed to return `0.0` (non-comparable).
+- `tools/news_digest.py` — `_parse_date()` returned raw strings like `"bad"` for malformed dates instead of `"Unknown"`. Now validates extracted prefix with `datetime.strptime`.
+- `tools/news_digest.py` — `digest_sentiment_summary()` called `max()` on all-zero counts when entries list was empty, returning an arbitrary key. Now returns `"Neutral"` explicitly for empty input.
+- `tools/portfolio_performance.py` — `compute_position()` returned `unrealised_pct = 0.0` when `avg_cost = 0` (undefined/infinite return). Now returns `None` to avoid misleading display.
+- `tools/portfolio_performance.py` — `compute_portfolio()` sort on `unrealised_pct` crashed with `TypeError` when any position had `avg_cost=0` (now `None`). Fixed sort key to `(pct or 0.0)`.
+- `tools/ma_crossover.py` — `ma_crossover_summary()` early-return for empty price history was missing keys (`fast_value`, `slow_value`, `n_bars`, `ma_type`, etc.) causing `KeyError` in the MA Crossover UI page.
+
+### Updated
+- `tests/test_new_tools.py` — Updated `TestComputePosition.test_zero_avg_cost` to assert `unrealised_pct is None` (was `0.0`).
+- `ui/pages/2_About.py` — Added **Version History** table covering v1.0.0–v1.7.2.
+
+---
+
 ## [1.7.1] - 2026-05-13
 
 ### Fixed
