@@ -53,10 +53,15 @@ def _normalise(text: str) -> str:
 
 
 def _jaccard(a: str, b: str) -> float:
-    """Token-level Jaccard similarity between two strings."""
+    """Token-level Jaccard similarity between two strings.
+
+    Returns 0.0 when both strings are empty so that two blank-title
+    articles are NOT treated as duplicates of each other.
+    """
     sa, sb = set(_normalise(a).split()), set(_normalise(b).split())
     if not sa and not sb:
-        return 1.0
+        # Both empty — no information to compare; treat as non-similar
+        return 0.0
     if not sa or not sb:
         return 0.0
     return len(sa & sb) / len(sa | sb)
@@ -116,12 +121,19 @@ _SENTIMENT_EMOJI = {"Bullish": "🟢", "Bearish": "🔴", "Neutral": "⚪"}
 
 
 def _parse_date(raw: Optional[str]) -> str:
-    """Return YYYY-MM-DD or 'Unknown'."""
+    """Return YYYY-MM-DD string or 'Unknown' for None/invalid input.
+
+    Validates that the extracted prefix matches YYYY-MM-DD format
+    so that short or malformed strings do not pass through as-is.
+    """
     if not raw:
         return "Unknown"
     try:
-        return raw[:10]
-    except Exception:
+        prefix = raw[:10]
+        # Validate the prefix actually looks like YYYY-MM-DD
+        datetime.strptime(prefix, "%Y-%m-%d")
+        return prefix
+    except (ValueError, TypeError, AttributeError):
         return "Unknown"
 
 
@@ -212,7 +224,11 @@ def digest_sentiment_summary(entries: List[DigestEntry]) -> Dict[str, Any]:
         scores.append(e.get("score", 0.0))
 
     avg_score = round(sum(scores) / len(scores), 4) if scores else 0.0
-    dominant  = max(counts, key=counts.get)  # type: ignore[arg-type]
+    # Explicit neutral when no entries — avoids ambiguous max() on all-zero counts
+    if not entries:
+        dominant = "Neutral"
+    else:
+        dominant = max(counts, key=lambda k: counts[k])  # type: ignore[return-value]
 
     return {
         "bullish_count":    counts.get("Bullish", 0),
