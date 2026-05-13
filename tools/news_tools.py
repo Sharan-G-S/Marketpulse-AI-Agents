@@ -141,3 +141,57 @@ def _mock_news(query: str) -> List[Dict[str, Any]]:
             "content": "Management highlighted supply chain optimizations as a key driver of margin expansion...",
         },
     ]
+
+
+def fetch_news(ticker: str, max_results: int = 10) -> List[Dict[str, Any]]:
+    """
+    Fetch financial news articles for a stock ticker symbol.
+
+    This is a plain-function wrapper around the ``fetch_financial_news``
+    LangChain @tool so it can be called directly in Streamlit pages and
+    other non-agent code without going through the LangChain tool interface.
+
+    Args:
+        ticker:      Uppercase stock symbol (e.g. "AAPL").
+        max_results: Maximum number of articles to return (default 10).
+                     Capped by NEWS_MAX_ARTICLES from settings.
+
+    Returns:
+        List of article dicts with title, description, url, source,
+        publishedAt, and content keys.
+    """
+    if not NEWSAPI_KEY:
+        articles = _mock_news(ticker)
+        return articles[:max_results]
+
+    from_date = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%d")
+    url = "https://newsapi.org/v2/everything"
+    params = {
+        "q":        f"{ticker} stock finance",
+        "from":     from_date,
+        "sortBy":   "relevancy",
+        "language": "en",
+        "pageSize": min(max_results, 30),
+        "apiKey":   NEWSAPI_KEY,
+    }
+    try:
+        resp = requests.get(url, params=params, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+        if data.get("status") != "ok":
+            return _mock_news(ticker)[:max_results]
+
+        return [
+            {
+                "title":       a.get("title", ""),
+                "description": a.get("description", ""),
+                "url":         a.get("url", ""),
+                "source":      a.get("source", {}).get("name", "Unknown"),
+                "publishedAt": a.get("publishedAt", ""),
+                "content":     (a.get("content") or "")[:500],
+            }
+            for a in data.get("articles", [])
+            if a.get("title") and a.get("url")
+        ][:max_results]
+    except Exception:
+        return _mock_news(ticker)[:max_results]
