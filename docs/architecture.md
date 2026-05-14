@@ -3,39 +3,44 @@
 ## Overview
 
 MarketPulse is a **multi-agent autonomous financial intelligence system** built on
-LangGraph and LangChain. It orchestrates five specialized AI agents through a
+LangGraph and LangChain. It orchestrates eight specialized AI agents through a
 directed state graph, each responsible for one analytical step.
 
 ---
 
-## Agent Graph
+## Agent Graph (v1.7.0)
 
 ```
 Inputs: ticker, company_name, analysis_depth
          │
          ▼
-  ┌─────────────┐
-  │  News Agent │  ← Fetches financial news via NewsAPI
-  └──────┬──────┘
-         │
-         ▼
-  ┌─────────────┐
-  │ Stock Agent │  ← Fetches OHLCV, market data via yfinance
-  └──────┬──────┘
-         │
-         ▼
+  ┌─────────────┐  ┌──────────────┐
+  │  News Agent │  │  Stock Agent │  ← Run in parallel (fan-out)
+  └──────┬──────┘  └──────┬───────┘
+         └────────┬────────┘
+                  ▼
+  ┌───────────────────┐
+  │  Watchlist Agent  │  ← Evaluates threshold alerts from stock data
+  └──────────┬────────┘
+             ▼
   ┌──────────────────┐
-  │ Sentiment Agent  │  ← LLM sentiment scoring per article
+  │ Sentiment Agent  │  ← LLM (or heuristic fallback) per-article scoring
   └──────┬───────────┘
-         │
          ▼
   ┌──────────────────┐
-  │ Risk Analyst     │  ← Cross-references sentiment + market data
+  │  Risk Analyst    │  ← Cross-references sentiment + market data
   └──────┬───────────┘
-         │
          ▼
   ┌──────────────────┐
-  │ Report Agent     │  ← Generates full markdown investment report
+  │ Portfolio Agent  │  ← P&L, sector allocation, diversification
+  └──────┬───────────┘
+         ▼
+  ┌──────────────────┐
+  │  Alert Engine    │  ← Structured alerts (CRITICAL/WARNING/INFO)
+  └──────┬───────────┘
+         ▼
+  ┌──────────────────┐
+  │  Report Agent    │  ← Generates full Markdown investment report
   └──────┬───────────┘
          │
         END
@@ -45,18 +50,22 @@ Inputs: ticker, company_name, analysis_depth
 
 ## Shared State
 
-All agents communicate exclusively through `MarketPulseState` (TypedDict).
-No agent calls another agent directly — all coordination is handled by LangGraph.
+All agents communicate exclusively through `MarketPulseState` (TypedDict in
+`graph/state.py`). No agent calls another agent directly — all coordination
+is handled by LangGraph conditional edges.
 
 ---
 
 ## LLM Interaction Points
 
-| Agent            | LLM Task                              | Output Schema        |
-|------------------|---------------------------------------|----------------------|
-| Sentiment Agent  | Per-article sentiment classification  | `SentimentAnalysis`  |
-| Risk Agent       | Risk flag generation + recommendation | `RiskAnalysis`       |
+| Agent            | LLM Task                              | Output Schema           |
+|------------------|---------------------------------------|-------------------------|
+| Sentiment Agent  | Per-article sentiment classification  | `SentimentAnalysis`     |
+| Risk Agent       | Risk flag generation + recommendation | `RiskAnalysis`          |
 | Report Agent     | Full report in Markdown format        | `str` (StrOutputParser) |
+
+> **Heuristic fallback:** If no LLM API key is set, `sentiment_agent` falls back
+> to the keyword-based `score_articles()` heuristic scorer (no LLM required).
 
 ---
 
@@ -77,7 +86,7 @@ NewsAPI ──────────────► raw_news[]
                               │
 yfinance ─────────────► stock_summary{}
                               │
-                        [Sentiment LLM]
+                        [Sentiment LLM / heuristic]
                               │
                         sentiment_scores[]
                         overall_sentiment
@@ -88,8 +97,27 @@ yfinance ─────────────► stock_summary{}
                         risk_level
                         key_insights[]
                               │
+                        [Portfolio Tracker]
+                              │
+                        portfolio_summary{}
+                              │
+                        [Alert Engine]
+                              │
+                        alerts[]
+                        has_critical_alerts
+                              │
                         [Report LLM]
                               │
                         final_report (markdown)
                         report_path (saved file)
 ```
+
+---
+
+## Known Limitations
+
+| Issue | Workaround |
+|-------|------------|
+| Circular import: `agents/__init__.py` → `alert_engine` → `graph.state` → `graph.__init__` → `workflow` → `agents.alert_engine` | Test files use `importlib.util.spec_from_file_location` to load agent modules directly, bypassing `__init__.py` |
+| CI requires `OPENAI_API_KEY` or `GOOGLE_API_KEY` only for LLM tests | Pure-Python tools are tested without any API key |
+| `asyncio_mode = "auto"` in pyproject.toml requires `pytest-asyncio` installed | Add `pytest-asyncio` to dev dependencies (see CONTRIBUTING.md) |
