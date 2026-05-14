@@ -18,8 +18,10 @@ cd Marketpulse-AI-Agents
 ```bash
 python -m venv .venv
 source .venv/bin/activate      # macOS/Linux
+# .venv\Scripts\activate       # Windows
 pip install -r requirements.txt
-pip install isort flake8 flake8-bugbear pytest pytest-cov
+# pytest-asyncio is required: pyproject.toml sets asyncio_mode = "auto"
+pip install isort flake8 flake8-bugbear pytest pytest-cov pytest-asyncio
 ```
 
 ### 3. Configure Environment Variables
@@ -192,8 +194,14 @@ Before opening a Pull Request, verify:
 - [ ] New tests added for new functionality
 - [ ] Docstrings added to all new public functions
 - [ ] `README.md` updated if adding new features
+- [ ] `CHANGELOG.md` entry added under `[Unreleased]`
 - [ ] No hardcoded API keys or secrets
 - [ ] No emojis in code comments or docstrings
+- [ ] CI passes on the PR — check the GitHub Actions tab after pushing
+
+> **Tip:** Run `isort . && flake8 . --count --select=E9,F63,F7,F82` locally
+> before pushing to catch import-order and syntax errors that will fail the
+> CI Lint job.
 
 ---
 
