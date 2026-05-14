@@ -4,6 +4,16 @@ MarketPulse — Shared State Schema
 This TypedDict is the single source of truth passed between all
 agents in the LangGraph workflow. Every agent reads from and writes
 back to this state object.
+
+Design notes
+------------
+- All *_done booleans are set to True by the corresponding agent on success.
+  They let downstream agents know whether their dependency has completed.
+- `portfolio_summary` may contain `pnl_pct = None` for zero-cost positions
+  (gifted/bonus shares) where the percentage return is undefined.  Callers
+  must handle None before formatting as a percentage string.
+- `messages` uses Annotated[…, operator.add] so LangGraph merges lists from
+  parallel branches rather than overwriting them.
 """
 
 import operator
@@ -44,14 +54,14 @@ class MarketPulseState(TypedDict):
     risk_done: bool
 
     # ── Portfolio Tracker Output ─────────────────────────────────────────────
-    portfolio_positions: List[Dict[str, Any]]  # [{ticker, quantity, avg_price, sector?}]
-    portfolio_summary: Dict[str, Any]          # Computed portfolio analytics
+    portfolio_positions: List[Dict[str, Any]]    # [{ticker, quantity, avg_price, sector?}]
+    portfolio_summary: Optional[Dict[str, Any]]  # None until portfolio_agent runs
     portfolio_done: bool
 
     # ── Alert Engine Output ──────────────────────────────────────────────────
     alerts: List[Dict[str, Any]]         # Structured alert payloads
     alert_summary: str                   # Human-readable summary
-    alert_counts: Dict[str, int]         # Severity counts
+    alert_counts: Dict[str, int]         # {"CRITICAL": n, "WARNING": n, "INFO": n}
     has_critical_alerts: bool
     alerts_done: bool
 
@@ -60,10 +70,10 @@ class MarketPulseState(TypedDict):
 
     # ── Report Agent Output ───────────────────────────────────────────────────
     final_report: str                    # Markdown-formatted investment report
-    report_path: Optional[str]           # Saved file path
+    report_path: Optional[str]           # Saved file path (None if save disabled)
     report_done: bool
 
     # ── Orchestration ─────────────────────────────────────────────────────────
-    messages: Annotated[List[str], operator.add]   # Agent log messages
-    error: Optional[str]
-    next_agent: str                      # Supervisor routing target
+    messages: Annotated[List[str], operator.add]   # Agent log messages (auto-merged)
+    error: Optional[str]                           # Set on unrecoverable agent error
+    next_agent: str                                # Supervisor routing target
