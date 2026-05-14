@@ -163,12 +163,17 @@ def score_articles(articles: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     Returns:
         New list of article dicts with 'sentiment' and 'score' fields added.
     """
+    import re as _re
+
     scored = []
     for art in articles:
-        text  = " ".join([
-            str(art.get("title", "")),
+        raw_text = " ".join([
+            str(art.get("title",       "")),
             str(art.get("description", "")),
         ]).lower()
+        # Strip punctuation so that tokens like 'beat,' 'losses.' 'fraud!'
+        # correctly match the keyword set (was a systematic miss before).
+        text  = _re.sub(r"[^\w\s]", " ", raw_text)
         words = set(text.split())
 
         bull_hits = len(words & _BULLISH_KEYWORDS)
@@ -187,3 +192,4 @@ def score_articles(articles: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         scored.append({**art, "sentiment": sentiment, "score": round(score, 3)})
 
     return scored
+
