@@ -42,16 +42,29 @@ def web_search_results(query: str) -> List[Dict[str, Any]]:
     Perform a web search and return structured results with title, link, and snippet.
     Returns up to 5 results for a given financial query.
     """
+    import json as _json
+
     try:
         raw = _get_search_results().run(query)
+
+        # DuckDuckGoSearchResults may return either a JSON array string or
+        # a plain text list like "[snippet1], [snippet2]".  Try JSON first.
+        try:
+            parsed = _json.loads(raw)
+            if isinstance(parsed, list):
+                return parsed[:5]
+            return [{"snippet": str(parsed)}]
+        except (_json.JSONDecodeError, ValueError):
+            pass
+
+        # Fallback: split on '], [' separator used by some LangChain versions
         results = []
         for item in raw.split("], ["):
-            try:
-                snippet = item.strip("[]").strip()
+            snippet = item.strip("[] \n")
+            if snippet:
                 results.append({"snippet": snippet})
-            except Exception:
-                continue
-        return results if results else [{"snippet": raw}]
+        return results[:5] if results else [{"snippet": raw}]
+
     except Exception as e:
         return [{"error": str(e), "snippet": ""}]
 
