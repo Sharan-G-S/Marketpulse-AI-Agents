@@ -78,10 +78,11 @@ class TestComputePositionPnl:
         assert result["unrealised_pnl"] == 0.0
         assert result["pnl_pct"] == 0.0
 
-    def test_zero_avg_price_returns_zero_pct(self):
-        """avg_price=0 should not raise ZeroDivisionError."""
+    def test_zero_avg_price_returns_none_pct(self):
+        """avg_price=0 means percentage return is undefined — should return None, not 0.0."""
         result = compute_position_pnl({"quantity": 5, "avg_price": 0.0}, 100.0)
-        assert result["pnl_pct"] == 0.0
+        assert result["pnl_pct"] is None
+        assert result["unrealised_pnl"] == pytest.approx(500.0)  # P&L in $ still correct
 
     def test_fractional_shares(self):
         """Fractional quantity should compute correctly."""
