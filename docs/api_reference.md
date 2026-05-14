@@ -1,6 +1,11 @@
 # MarketPulse — API Reference
 
-Complete reference for all public tool functions (v1.7.0).
+Complete reference for all public tool functions (v1.7.2).
+
+> **v1.7.2 changes:** `compute_position.unrealised_pct` and
+> `compute_position_pnl.pnl_pct` now return `None` instead of `0.0`
+> when `avg_cost / avg_price` is 0 (gifted/bonus shares — percentage
+> return is undefined). Update any callers that assumed a `float`.
 
 ---
 
@@ -184,3 +189,40 @@ from tools.indicator_signals import format_indicator_table, overall_signal
 | `overall_signal` | `(rsi, macd, ma_str)` | `"🟢 Bullish"\|"🔴 Bearish"\|"⚪ Neutral"` |
 | `format_indicator_table` | `(ticker, price, rsi, macd, ma, bb)` | `str` |
 | `format_multi_indicator_table` | `(entries)` | `str` |
+
+---
+
+## tools.news_tools
+
+```python
+from tools.news_tools import fetch_news
+```
+
+| Function | Signature | Returns |
+|----------|-----------|------------|
+| `fetch_financial_news` | `(ticker: str, max_results: int = 10)` → `@tool` | `List[Dict]` |
+| `get_company_news` | `(company: str, max_results: int = 10)` → `@tool` | `List[Dict]` |
+| `fetch_news` | `(ticker: str, max_results: int = 10)` | `List[Dict]` |
+
+> **`fetch_news`** is a plain Python function (not a LangChain `@tool`).
+> Use it when importing directly in Streamlit pages or scripts where
+> `@tool` overhead is unwanted.  It shares the same NewsAPI integration
+> and mock-data fallback as `fetch_financial_news`.
+
+**Article dict keys:** `title`, `description`, `url`, `publishedAt`, `source`
+
+---
+
+## tools.csv_export
+
+```python
+from tools.csv_export import export_portfolio_csv, save_csv_to_disk
+```
+
+| Function | Signature | Returns |
+|----------|-----------|------------|
+| `export_portfolio_csv` | `(positions: List[Dict])` | `str` (CSV) |
+| `export_watchlist_csv` | `(watchlist: List[Dict])` | `str` (CSV) |
+| `export_alerts_csv` | `(alerts: List[Dict])` | `str` (CSV) |
+| `save_csv_to_disk` | `(csv_content, prefix, output_dir="./reports")` | `str` (path) |
+| `export_summary_csv` | `(portfolio_result, watchlist, alerts)` | `Dict[str, str]` |
