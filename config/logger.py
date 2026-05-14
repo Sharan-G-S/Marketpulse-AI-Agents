@@ -99,20 +99,23 @@ class ExecutionTracker:
     """Singleton that tracks the full pipeline execution history."""
 
     _instance = None
-    _runs: List[Dict[str, Any]] = []
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
+            # Initialise _runs on the instance (not the class) to prevent
+            # the classic mutable-class-attribute bug where all instances
+            # (and all test runs) share the same list object.
+            cls._instance._runs: List[Dict[str, Any]] = []
         return cls._instance
 
     def record_run(self, ticker: str, state: Dict[str, Any], elapsed: float):
         self._runs.append({
-            "ticker": ticker,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "elapsed_seconds": round(elapsed, 2),
-            "risk_level": state.get("risk_level", "N/A"),
-            "sentiment": state.get("overall_sentiment", "N/A"),
+            "ticker":           ticker,
+            "timestamp":        datetime.now(timezone.utc).isoformat(),
+            "elapsed_seconds":  round(elapsed, 2),
+            "risk_level":       state.get("risk_level", "N/A"),
+            "sentiment":        state.get("overall_sentiment", "N/A"),
             "report_generated": bool(state.get("final_report")),
         })
 
@@ -128,11 +131,16 @@ execution_tracker = ExecutionTracker()
 
 
 def write_json_log(payload: Dict[str, Any], log_dir: str, prefix: str) -> str:
-    """Write structured JSON payload to a timestamped log file."""
+    """Write structured JSON payload to a timestamped log file.
+
+    Uses ensure_ascii=False so that non-ASCII content (company names,
+    currency symbols like \u00a5 / \u20ac) is stored as readable UTF-8
+    rather than \\uXXXX escape sequences.
+    """
     os.makedirs(log_dir, exist_ok=True)
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     filename = f"{prefix}_{timestamp}.json"
     path = os.path.join(log_dir, filename)
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(payload, f, ensure_ascii=True, indent=2)
+        json.dump(payload, f, ensure_ascii=False, indent=2)
     return path
