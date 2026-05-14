@@ -47,21 +47,26 @@ def compute_position_pnl(
         current_price: Current market price per share.
 
     Returns:
-        Dict with cost_basis, market_value, unrealised_pnl, pnl_pct, weight (stub).
+        Dict with cost_basis, market_value, unrealised_pnl, pnl_pct.
+        pnl_pct is None when avg_price is 0 (gifted/bonus shares —
+        the return percentage is mathematically undefined).
     """
     qty = float(position.get("quantity", 0))
     avg = float(position.get("avg_price", 0))
 
-    cost_basis = round(qty * avg, 2)
-    market_value = round(qty * current_price, 2)
+    cost_basis     = round(qty * avg, 2)
+    market_value   = round(qty * current_price, 2)
     unrealised_pnl = round(market_value - cost_basis, 2)
-    pnl_pct = round(((current_price - avg) / avg) * 100, 2) if avg > 0 else 0.0
+    # Return None for zero-cost positions instead of the misleading 0.0
+    pnl_pct: Optional[float] = (
+        round(((current_price - avg) / avg) * 100, 2) if avg > 0 else None
+    )
 
     return {
-        "cost_basis": cost_basis,
-        "market_value": market_value,
+        "cost_basis":     cost_basis,
+        "market_value":   market_value,
         "unrealised_pnl": unrealised_pnl,
-        "pnl_pct": pnl_pct,
+        "pnl_pct":        pnl_pct,
     }
 
 
