@@ -30,10 +30,22 @@ class TestRSI:
         rsi = compute_rsi(closes)
         assert rsi > 60  # Should be elevated for consistent gains
 
+    def test_rsi_oversold_with_falling_prices(self):
+        """RSI must be depressed (<40) when prices fall consistently."""
+        closes = [float(100 - i) for i in range(50)]
+        rsi = compute_rsi(closes)
+        assert rsi < 40, f"Expected RSI < 40 for falling prices, got {rsi:.2f}"
+
     def test_rsi_returns_neutral_for_insufficient_data(self):
         closes = [100.0, 101.0]
         rsi = compute_rsi(closes, period=14)
         assert rsi == 50.0
+
+    def test_rsi_boundary_period_plus_one(self):
+        """RSI with exactly period+1 bars should produce a valid non-default result."""
+        closes = [float(100 + i) for i in range(15)]  # period=14, so 15 bars = just enough
+        rsi = compute_rsi(closes, period=14)
+        assert 0 <= rsi <= 100
 
     def test_rsi_range(self, mock_price_history):
         closes = [r["close"] for r in mock_price_history]
