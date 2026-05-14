@@ -14,6 +14,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.7.3] - 2026-05-15
+
+### Fixed
+- `agents/portfolio_tracker.py` — `compute_position_pnl()` returned `pnl_pct = 0.0` when `avg_price = 0` (undefined return). Now returns `None`, consistent with `portfolio_performance.compute_position`.
+- `config/utils.py` — `format_market_cap(0)` and `format_volume(0)` returned `"N/A"` due to falsy `if not cap` check. Fixed to `if cap is None`.
+- `config/logger.py` — `ExecutionTracker._runs` was a mutable class-level attribute (shared across test runs). Now initialised on the singleton instance. Also fixed `write_json_log` to use `ensure_ascii=False` for readable UTF-8 output.
+- `tools/search_tools.py` — `web_search_results()` parsed DuckDuckGo output with a fragile string splitter. Now tries JSON parsing first, then falls back to text splitting.
+- `agents/sentiment_agent.py` — `score_articles()` missed ~30-40% of keyword matches because punctuation was not stripped before tokenizing. Fixed with `re.sub(r"[^\w\s]", " ", text)`.
+
+### Added
+- `tests/test_indicators.py` — Added `test_rsi_oversold_with_falling_prices` and `test_rsi_boundary_period_plus_one` to fill coverage gaps.
+
+### Updated
+- `tests/test_portfolio_tracker.py` — Updated `test_zero_avg_price` to assert `pnl_pct is None`.
+- `CONTRIBUTING.md` — Added `pytest-asyncio` to dev install, Windows activation command, CHANGELOG checklist item, and CI tip.
+- `docs/api_reference.md` — Bumped to v1.7.2; added `tools.news_tools` and `tools.csv_export` sections; added breaking-change callout for `pnl_pct / unrealised_pct = None`.
+- `docs/architecture.md` — Updated to 8-node agent graph topology; added Known Limitations table.
+- `graph/state.py` — Improved field comments; `portfolio_summary` is now `Optional[Dict]`; added Design Notes docstring.
+
+---
+
 ## [1.7.2] - 2026-05-13
 
 ### Fixed
