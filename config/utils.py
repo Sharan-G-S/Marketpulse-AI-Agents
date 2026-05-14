@@ -13,7 +13,7 @@ from typing import Optional
 
 def format_market_cap(cap: Optional[float]) -> str:
     """Format a market cap number into human-readable string."""
-    if not cap:
+    if cap is None:
         return "N/A"
     if cap >= 1e12:
         return f"${cap / 1e12:.2f}T"
@@ -26,7 +26,7 @@ def format_market_cap(cap: Optional[float]) -> str:
 
 def format_volume(vol: Optional[int]) -> str:
     """Format trading volume into human-readable string."""
-    if not vol:
+    if vol is None:
         return "N/A"
     if vol >= 1e9:
         return f"{vol / 1e9:.2f}B"
