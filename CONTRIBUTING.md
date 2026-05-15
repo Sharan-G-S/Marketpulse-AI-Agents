@@ -18,7 +18,8 @@ cd Marketpulse-AI-Agents
 ```bash
 python -m venv .venv
 source .venv/bin/activate      # macOS/Linux
-# .venv\Scripts\activate       # Windows
+# .venv\Scripts\activate       # Windows (CMD)
+# .\.venv\Scripts\Activate.ps1 # Windows (PowerShell)
 pip install -r requirements.txt
 # pytest-asyncio is required: pyproject.toml sets asyncio_mode = "auto"
 pip install isort flake8 flake8-bugbear pytest pytest-cov pytest-asyncio
