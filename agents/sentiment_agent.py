@@ -139,14 +139,16 @@ def sentiment_agent(state: MarketPulseState) -> MarketPulseState:
 _BULLISH_KEYWORDS = {
     "beat", "beats", "surge", "surged", "gain", "gains", "rally", "rallies",
     "record", "growth", "profit", "upgrade", "strong", "positive", "rises",
-    "jumps", "outperform", "exceeds", "bullish", "breakout",
+    "jumps", "outperform", "exceeds", "bullish", "breakout", "buy", "up",
+    "higher", "soars", "boom", "dividend", "momentum", "rebound", "recovers"
 }
 
 _BEARISH_KEYWORDS = {
     "miss", "misses", "drop", "drops", "fell", "fall", "loss", "losses",
     "decline", "declines", "downgrade", "weak", "negative", "lawsuit",
     "investigation", "crash", "bearish", "warning", "cuts", "layoffs",
-    "recall", "fraud", "penalty", "fine",
+    "recall", "fraud", "penalty", "fine", "sell", "down", "lower", "plunges",
+    "slump", "bankrupt", "debt", "crisis", "probe"
 }
 
 
