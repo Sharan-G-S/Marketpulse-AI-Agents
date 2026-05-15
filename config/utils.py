@@ -78,6 +78,19 @@ def format_percent(pct: Optional[float], show_sign: bool = True) -> str:
     return f"{sign}{pct:.2f}%"
 
 
+def format_change_pct(pct: Optional[float]) -> str:
+    """Format a percentage value with HTML color tags (green for positive, red for negative)."""
+    if pct is None:
+        return "N/A"
+    
+    formatted = format_percent(pct, show_sign=True)
+    if pct > 0:
+        return f'<span style="color: green;">{formatted}</span>'
+    elif pct < 0:
+        return f'<span style="color: red;">{formatted}</span>'
+    return formatted
+
+
 # ── Ticker Validation ─────────────────────────────────────────────────────────
 
 def validate_ticker(ticker: str) -> bool:
