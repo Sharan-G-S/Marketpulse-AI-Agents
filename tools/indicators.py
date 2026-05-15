@@ -206,6 +206,53 @@ def compute_moving_averages(closes: List[float]) -> Dict[str, Any]:
     return result
 
 
+def compute_atr(price_history: List[Dict], period: int = 14) -> Dict[str, Any]:
+    """
+    Compute the Average True Range (ATR) for measuring price volatility.
+
+    True Range is max(High-Low, |High-PrevClose|, |Low-PrevClose|).
+    ATR is the exponential moving average of True Range over `period` bars.
+
+    Args:
+        price_history: List of OHLCV dicts with 'high', 'low', 'close' keys.
+        period: ATR lookback period (default 14).
+
+    Returns:
+        Dict with 'atr', 'atr_pct' (relative to last close), and 'volatility_label'.
+    """
+    if len(price_history) < period + 1:
+        return {"atr": None, "atr_pct": None, "volatility_label": "Insufficient data"}
+
+    try:
+        true_ranges: List[float] = []
+        for i in range(1, len(price_history)):
+            high = price_history[i]["high"]
+            low = price_history[i]["low"]
+            prev_close = price_history[i - 1]["close"]
+            tr = max(high - low, abs(high - prev_close), abs(low - prev_close))
+            true_ranges.append(tr)
+
+        if len(true_ranges) < period:
+            return {"atr": None, "atr_pct": None, "volatility_label": "Insufficient data"}
+
+        atr_series = pd.Series(true_ranges)
+        atr_val = round(float(atr_series.ewm(com=period - 1, min_periods=period).mean().iloc[-1]), 4)
+        last_close = price_history[-1]["close"]
+        atr_pct = round(atr_val / last_close * 100, 2) if last_close else None
+
+        if atr_pct is None:
+            volatility_label = "N/A"
+        elif atr_pct >= 3.0:
+            volatility_label = "High Volatility"
+        elif atr_pct >= 1.5:
+            volatility_label = "Moderate Volatility"
+        else:
+            volatility_label = "Low Volatility"
+
+        return {"atr": atr_val, "atr_pct": atr_pct, "volatility_label": volatility_label}
+    except (KeyError, TypeError, ValueError):
+        return {"atr": None, "atr_pct": None, "volatility_label": "Error"}
+
 def get_all_indicators(price_history: List[Dict]) -> Dict[str, Any]:
     """
     Compute all technical indicators from a price history list.
@@ -214,7 +261,8 @@ def get_all_indicators(price_history: List[Dict]) -> Dict[str, Any]:
         price_history: List of OHLCV dicts (from get_price_history tool)
 
     Returns:
-        Dict containing RSI, MACD, Bollinger Bands, and Moving Averages
+        Dict containing RSI, MACD, Bollinger Bands, Moving Averages,
+        Stochastic Oscillator, and Average True Range.
     """
     if not price_history or "error" in price_history[0]:
         return {"error": "Insufficient price data for technical analysis"}
@@ -232,5 +280,6 @@ def get_all_indicators(price_history: List[Dict]) -> Dict[str, Any]:
         "bollinger_bands": compute_bollinger_bands(closes),
         "moving_averages": compute_moving_averages(closes),
         "stochastic": compute_stochastic_oscillator(price_history),
+        "atr": compute_atr(price_history),
         "data_points": len(closes),
     }
