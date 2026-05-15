@@ -10,8 +10,8 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 
-from graph.state import MarketPulseState
 from config.utils import format_large_number
+from graph.state import MarketPulseState
 
 
 def get_llm():
