@@ -66,6 +66,7 @@ st.markdown("### 📦 Version History")
 st.markdown("""
 | Version | Date | Highlights |
 |---------|------|------------|
+| **v1.7.4** | 2026-05-15 | Added Stochastic Oscillator & ATR indicators, Free Cash Flow, `format_large_number` / HTML color formatting, expanded sentiment keywords |
 | **v1.7.1** | 2026-05-13 | Bug fixes: `fetch_news()` missing, `_jaccard` empty-title, `_parse_date` validation, `unrealised_pct=None` for zero-cost, MA Crossover `KeyError`, `digest_sentiment_summary` empty entries |
 | **v1.7.0** | 2026-05-12 | New tools: Diversification Scorer, Earnings Surprise, MA Crossover, Data Quality Validator, Price Alerts CLI; 2 new Streamlit pages; API reference docs |
 | **v1.6.0** | 2026-05-11 | Portfolio Performance tracker, News Digest formatter, Market Calendar |
