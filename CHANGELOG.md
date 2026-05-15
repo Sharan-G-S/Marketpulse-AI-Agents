@@ -14,6 +14,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.7.4] - 2026-05-15
+
+### Added
+- `tools/indicators.py` — Added `compute_stochastic_oscillator()` (%K/%D) and `compute_atr()` (Average True Range). Wired both into `get_all_indicators()`.
+- `config/utils.py` — Added `format_large_number()` generic helper and `format_change_pct()` HTML color tags helper.
+- `tools/stock_tools.py` — Added `free_cash_flow` to `get_financials()` output.
+
+### Fixed
+- `config/utils.py` — Fixed `format_volume()` negative value edge case.
+- `agents/risk_analyst_agent.py` — Guarded `market_cap` string formatting against type errors by using `format_large_number()`.
+- `agents/sentiment_agent.py` — Expanded `_BULLISH_KEYWORDS` and `_BEARISH_KEYWORDS` for better heuristic scoring.
+
+### Updated
+- `CONTRIBUTING.md` — Added Windows PowerShell virtualenv activation command `.\.venv\Scripts\Activate.ps1`.
+
+---
+
 ## [1.7.3] - 2026-05-15
 
 ### Fixed
