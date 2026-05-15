@@ -4,7 +4,7 @@ Computes RSI, MACD, Bollinger Bands, and moving averages
 from OHLCV price history data.
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
@@ -115,6 +115,69 @@ def compute_bollinger_bands(
     }
 
 
+def compute_stochastic_oscillator(
+    price_history: List[Dict],
+    k_period: int = 14,
+    d_period: int = 3,
+) -> Dict[str, Any]:
+    """
+    Compute the Stochastic Oscillator (%K and %D lines).
+
+    %K = (Close - Lowest Low) / (Highest High - Lowest Low) * 100
+    %D = Simple moving average of %K over d_period bars.
+
+    Args:
+        price_history: List of OHLCV dicts with 'high', 'low', 'close' keys.
+        k_period: Lookback period for %K (default 14).
+        d_period: Smoothing period for %D (default 3).
+
+    Returns:
+        Dict with 'k', 'd', 'signal' and 'zone' keys.
+    """
+    if len(price_history) < k_period:
+        return {"k": None, "d": None, "signal": "Insufficient data", "zone": "N/A"}
+
+    try:
+        highs = [r["high"] for r in price_history]
+        lows = [r["low"] for r in price_history]
+        closes = [r["close"] for r in price_history]
+
+        k_values: List[Optional[float]] = []
+        for i in range(len(closes)):
+            if i < k_period - 1:
+                k_values.append(None)
+                continue
+            window_highs = highs[i - k_period + 1: i + 1]
+            window_lows = lows[i - k_period + 1: i + 1]
+            highest_high = max(window_highs)
+            lowest_low = min(window_lows)
+            denom = highest_high - lowest_low
+            if denom == 0:
+                k_values.append(50.0)
+            else:
+                k_values.append((closes[i] - lowest_low) / denom * 100)
+
+        valid_k = [v for v in k_values if v is not None]
+        if len(valid_k) < d_period:
+            return {"k": None, "d": None, "signal": "Insufficient data", "zone": "N/A"}
+
+        k_val = round(valid_k[-1], 2)
+        d_val = round(sum(valid_k[-d_period:]) / d_period, 2)
+
+        if k_val >= 80:
+            zone = "Overbought"
+        elif k_val <= 20:
+            zone = "Oversold"
+        else:
+            zone = "Neutral"
+
+        signal = "Bullish" if k_val > d_val else "Bearish"
+
+        return {"k": k_val, "d": d_val, "signal": signal, "zone": zone}
+    except (KeyError, TypeError, ValueError):
+        return {"k": None, "d": None, "signal": "Error", "zone": "N/A"}
+
+
 def compute_moving_averages(closes: List[float]) -> Dict[str, Any]:
     """Compute SMA-20, SMA-50, EMA-12, EMA-26 and their trend signals."""
     series = pd.Series(closes)
@@ -163,10 +226,11 @@ def get_all_indicators(price_history: List[Dict]) -> Dict[str, Any]:
         "rsi_signal": (
             "Overbought (RSI > 70)" if compute_rsi(closes) > 70
             else "Oversold (RSI < 30)" if compute_rsi(closes) < 30
-            else "Neutral (RSI 30–70)"
+            else "Neutral (RSI 30-70)"
         ),
         "macd": compute_macd(closes),
         "bollinger_bands": compute_bollinger_bands(closes),
         "moving_averages": compute_moving_averages(closes),
+        "stochastic": compute_stochastic_oscillator(price_history),
         "data_points": len(closes),
     }
