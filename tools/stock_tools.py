@@ -101,12 +101,16 @@ def get_financials(ticker: str) -> Dict[str, Any]:
             return {"error": "No financial data available"}
 
         latest = income.iloc[:, 0]
+        cash_flow = stock.cash_flow
+        latest_cf = cash_flow.iloc[:, 0] if cash_flow is not None and not cash_flow.empty else {}
+
         return {
             "total_revenue": latest.get("Total Revenue", None),
             "gross_profit": latest.get("Gross Profit", None),
             "operating_income": latest.get("Operating Income", None),
             "net_income": latest.get("Net Income", None),
             "ebitda": latest.get("EBITDA", None),
+            "free_cash_flow": latest_cf.get("Free Cash Flow", None),
             "period": str(income.columns[0].date()) if not income.empty else "N/A",
         }
     except Exception as e:
