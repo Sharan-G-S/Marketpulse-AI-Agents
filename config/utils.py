@@ -28,13 +28,39 @@ def format_volume(vol: Optional[int]) -> str:
     """Format trading volume into human-readable string."""
     if vol is None:
         return "N/A"
-    if vol >= 1e9:
+    abs_vol = abs(vol)
+    if abs_vol >= 1e9:
         return f"{vol / 1e9:.2f}B"
-    if vol >= 1e6:
+    if abs_vol >= 1e6:
         return f"{vol / 1e6:.1f}M"
-    if vol >= 1e3:
+    if abs_vol >= 1e3:
         return f"{vol / 1e3:.1f}K"
     return str(vol)
+
+
+def format_large_number(value: Optional[float], prefix: str = "") -> str:
+    """
+    Format any large number with T/B/M/K suffixes.
+
+    Args:
+        value: Numeric value to format.
+        prefix: Optional prefix string (e.g. "$").
+
+    Returns:
+        Human-readable string such as "$1.23B" or "456.7K".
+    """
+    if value is None:
+        return "N/A"
+    abs_val = abs(value)
+    if abs_val >= 1e12:
+        return f"{prefix}{value / 1e12:.2f}T"
+    if abs_val >= 1e9:
+        return f"{prefix}{value / 1e9:.2f}B"
+    if abs_val >= 1e6:
+        return f"{prefix}{value / 1e6:.2f}M"
+    if abs_val >= 1e3:
+        return f"{prefix}{value / 1e3:.1f}K"
+    return f"{prefix}{value:,.0f}"
 
 
 def format_price(price: Optional[float], currency: str = "$") -> str:
