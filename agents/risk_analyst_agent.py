@@ -11,6 +11,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 
 from graph.state import MarketPulseState
+from config.utils import format_large_number
 
 
 def get_llm():
@@ -53,7 +54,7 @@ Trend: {trend}
 52-Week High: ${high_52w} | 52-Week Low: ${low_52w}
 PE Ratio: {pe_ratio}
 Beta: {beta}
-Market Cap: ${market_cap:,.0f}
+Market Cap: {market_cap}
 Analyst Target: ${analyst_target}
 Analyst Recommendation: {analyst_rec}
 Sector: {sector}
@@ -104,7 +105,7 @@ def risk_analyst_agent(state: MarketPulseState) -> MarketPulseState:
             "low_52w": stock.get("52w_low", "N/A"),
             "pe_ratio": stock.get("pe_ratio", "N/A"),
             "beta": stock.get("beta", "N/A"),
-            "market_cap": stock.get("market_cap", 0) or 0,
+            "market_cap": format_large_number(stock.get("market_cap"), prefix="$"),
             "analyst_target": stock.get("analyst_target_price", "N/A"),
             "analyst_rec": stock.get("recommendation", "N/A"),
             "sector": stock.get("sector", "N/A"),
