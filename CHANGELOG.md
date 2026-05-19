@@ -322,3 +322,4 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `.github/workflows/ci.yml` - GitHub Actions CI with lint, test, security jobs
 - `.streamlit/config.toml` - Streamlit dark theme configuration
 - `docs/architecture.md` - System architecture documentation
+\n## [1.7.5] - 2026-05-19\n### Added\n- VWAP Indicator\n### Fixed\n- Bug in get_all_indicators where empty closes would crash RSI\n
