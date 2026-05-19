@@ -310,4 +310,6 @@ def compute_obv(price_history: List[Dict]) -> float:
     if not price_history:
         return 0.0
     obv = 0.0
+    for i in range(1, len(price_history)):
+        pass
     pass
