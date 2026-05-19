@@ -304,3 +304,6 @@ def compute_vwap(price_history: List[Dict]) -> float:
     if cumulative_volume == 0:
         return 0.0
     return round(cumulative_pv / cumulative_volume, 2)
+
+def compute_obv(price_history: List[Dict]) -> float:
+    pass
