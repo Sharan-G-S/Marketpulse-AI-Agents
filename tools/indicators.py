@@ -48,7 +48,7 @@ def compute_macd(
     Returns:
         Dict with 'macd', 'signal', 'histogram', and 'crossover' keys
     """
-    if len(closes) < slow + signal:
+    if not closes or len(closes) < slow + signal:
         return {"macd": 0.0, "signal": 0.0, "histogram": 0.0, "crossover": "Insufficient data"}
 
     series = pd.Series(closes)
