@@ -282,7 +282,7 @@ def get_all_indicators(price_history: List[Dict]) -> Dict[str, Any]:
         "bollinger_bands": compute_bollinger_bands(closes),
         "moving_averages": compute_moving_averages(closes),
         "stochastic": compute_stochastic_oscillator(price_history),
-        "atr": compute_atr(price_history),
+        "atr": compute_atr(price_history),\n        "vwap": compute_vwap(price_history),
         "data_points": len(closes),
     }
 
