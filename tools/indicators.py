@@ -284,6 +284,7 @@ def get_all_indicators(price_history: List[Dict]) -> Dict[str, Any]:
         "stochastic": compute_stochastic_oscillator(price_history),
         "atr": compute_atr(price_history),
         "vwap": compute_vwap(price_history),
+        "obv": compute_obv(price_history),
         "data_points": len(closes),
     }
 
