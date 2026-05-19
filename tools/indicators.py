@@ -307,4 +307,6 @@ def compute_vwap(price_history: List[Dict]) -> float:
 
 def compute_obv(price_history: List[Dict]) -> float:
     """Compute On-Balance Volume (OBV)."""
+    if not price_history:
+        return 0.0
     pass
