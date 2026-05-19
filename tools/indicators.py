@@ -314,5 +314,9 @@ def compute_obv(price_history: List[Dict]) -> float:
         curr = price_history[i].get('close', 0)
         prev = price_history[i-1].get('close', 0)
         vol = price_history[i].get('volume', 0)
+        if curr > prev:
+            obv += vol
+        elif curr < prev:
+            obv -= vol
         pass
     pass
