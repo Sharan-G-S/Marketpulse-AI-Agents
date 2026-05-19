@@ -288,4 +288,6 @@ def get_all_indicators(price_history: List[Dict]) -> Dict[str, Any]:
 
 def compute_vwap(price_history: List[Dict]) -> float:
     """Compute Volume Weighted Average Price (VWAP)."""
+    if not price_history:
+        return 0.0
     pass
