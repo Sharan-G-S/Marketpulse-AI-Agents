@@ -311,5 +311,8 @@ def compute_obv(price_history: List[Dict]) -> float:
         return 0.0
     obv = 0.0
     for i in range(1, len(price_history)):
+        curr = price_history[i].get('close', 0)
+        prev = price_history[i-1].get('close', 0)
+        vol = price_history[i].get('volume', 0)
         pass
     pass
