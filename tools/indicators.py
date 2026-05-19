@@ -298,5 +298,6 @@ def compute_vwap(price_history: List[Dict]) -> float:
         close = row.get("close", 0)
         volume = row.get("volume", 0)
         typical_price = (high + low + close) / 3
-        pass
+        cumulative_pv += typical_price * volume
+        cumulative_volume += volume
     pass
