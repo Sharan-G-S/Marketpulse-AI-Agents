@@ -300,4 +300,6 @@ def compute_vwap(price_history: List[Dict]) -> float:
         typical_price = (high + low + close) / 3
         cumulative_pv += typical_price * volume
         cumulative_volume += volume
-    pass
+    if cumulative_volume == 0:
+        return 0.0
+    return round(cumulative_pv / cumulative_volume, 2)
