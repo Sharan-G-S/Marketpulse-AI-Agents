@@ -290,4 +290,6 @@ def compute_vwap(price_history: List[Dict]) -> float:
     """Compute Volume Weighted Average Price (VWAP)."""
     if not price_history:
         return 0.0
+    cumulative_pv = 0.0
+    cumulative_volume = 0.0
     pass
