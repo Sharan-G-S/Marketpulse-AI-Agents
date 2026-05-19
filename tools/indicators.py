@@ -285,3 +285,6 @@ def get_all_indicators(price_history: List[Dict]) -> Dict[str, Any]:
         "atr": compute_atr(price_history),
         "data_points": len(closes),
     }
+
+def compute_vwap(price_history: List[Dict]) -> float:
+    pass
