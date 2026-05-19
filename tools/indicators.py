@@ -268,6 +268,8 @@ def get_all_indicators(price_history: List[Dict]) -> Dict[str, Any]:
         return {"error": "Insufficient price data for technical analysis"}
 
     closes = [r["close"] for r in price_history if "close" in r]
+    if not closes:
+        return {"error": "No close prices available in history"}
 
     return {
         "rsi": compute_rsi(closes),
