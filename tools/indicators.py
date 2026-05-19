@@ -292,4 +292,6 @@ def compute_vwap(price_history: List[Dict]) -> float:
         return 0.0
     cumulative_pv = 0.0
     cumulative_volume = 0.0
+    for row in price_history:
+        pass
     pass
