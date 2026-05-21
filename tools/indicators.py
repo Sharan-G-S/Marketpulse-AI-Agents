@@ -1,3 +1,4 @@
+from tools.fibonacci import calculate_fibonacci_levels
 """
 Technical Indicators Module
 Computes RSI, MACD, Bollinger Bands, and moving averages
@@ -285,6 +286,7 @@ def get_all_indicators(price_history: List[Dict]) -> Dict[str, Any]:
         "atr": compute_atr(price_history),
         "vwap": compute_vwap(price_history),
         "obv": compute_obv(price_history),
+        "fibonacci": calculate_fibonacci_levels(price_history),
         "data_points": len(closes),
     }
 
