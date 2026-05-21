@@ -12,4 +12,5 @@ def calculate_fibonacci_levels(price_history: List[Dict]) -> Dict[str, float]:
     diff = max_high - min_low
     levels: Dict[str, float] = {}
     levels["0.236"] = round(max_high - 0.236 * diff, 2)
+    levels["0.382"] = round(max_high - 0.382 * diff, 2)
     pass
