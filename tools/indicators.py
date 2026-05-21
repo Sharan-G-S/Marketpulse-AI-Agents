@@ -1,4 +1,3 @@
-from tools.fibonacci import calculate_fibonacci_levels
 """
 Technical Indicators Module
 Computes RSI, MACD, Bollinger Bands, and moving averages
@@ -8,6 +7,8 @@ from OHLCV price history data.
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
+
+from tools.fibonacci import calculate_fibonacci_levels
 
 
 def compute_rsi(closes: List[float], period: int = 14) -> float:
@@ -254,6 +255,42 @@ def compute_atr(price_history: List[Dict], period: int = 14) -> Dict[str, Any]:
     except (KeyError, TypeError, ValueError):
         return {"atr": None, "atr_pct": None, "volatility_label": "Error"}
 
+
+def compute_vwap(price_history: List[Dict]) -> float:
+    """Compute Volume Weighted Average Price (VWAP)."""
+    if not price_history:
+        return 0.0
+    cumulative_pv = 0.0
+    cumulative_volume = 0.0
+    for row in price_history:
+        high = row.get("high", row.get("close", 0))
+        low = row.get("low", row.get("close", 0))
+        close = row.get("close", 0)
+        volume = row.get("volume", 0)
+        typical_price = (high + low + close) / 3
+        cumulative_pv += typical_price * volume
+        cumulative_volume += volume
+    if cumulative_volume == 0:
+        return 0.0
+    return round(cumulative_pv / cumulative_volume, 2)
+
+
+def compute_obv(price_history: List[Dict]) -> float:
+    """Compute On-Balance Volume (OBV)."""
+    if not price_history:
+        return 0.0
+    obv = 0.0
+    for i in range(1, len(price_history)):
+        curr = price_history[i].get("close", 0)
+        prev = price_history[i - 1].get("close", 0)
+        vol = price_history[i].get("volume", 0)
+        if curr > prev:
+            obv += vol
+        elif curr < prev:
+            obv -= vol
+    return round(obv, 2)
+
+
 def get_all_indicators(price_history: List[Dict]) -> Dict[str, Any]:
     """
     Compute all technical indicators from a price history list.
@@ -263,7 +300,7 @@ def get_all_indicators(price_history: List[Dict]) -> Dict[str, Any]:
 
     Returns:
         Dict containing RSI, MACD, Bollinger Bands, Moving Averages,
-        Stochastic Oscillator, and Average True Range.
+        Stochastic Oscillator, Average True Range, VWAP, OBV, and Fibonacci.
     """
     if not price_history or "error" in price_history[0]:
         return {"error": "Insufficient price data for technical analysis"}
@@ -289,36 +326,3 @@ def get_all_indicators(price_history: List[Dict]) -> Dict[str, Any]:
         "fibonacci": calculate_fibonacci_levels(price_history),
         "data_points": len(closes),
     }
-
-def compute_vwap(price_history: List[Dict]) -> float:
-    """Compute Volume Weighted Average Price (VWAP)."""
-    if not price_history:
-        return 0.0
-    cumulative_pv = 0.0
-    cumulative_volume = 0.0
-    for row in price_history:
-        high = row.get("high", row.get("close", 0))
-        low = row.get("low", row.get("close", 0))
-        close = row.get("close", 0)
-        volume = row.get("volume", 0)
-        typical_price = (high + low + close) / 3
-        cumulative_pv += typical_price * volume
-        cumulative_volume += volume
-    if cumulative_volume == 0:
-        return 0.0
-    return round(cumulative_pv / cumulative_volume, 2)
-
-def compute_obv(price_history: List[Dict]) -> float:
-    """Compute On-Balance Volume (OBV)."""
-    if not price_history:
-        return 0.0
-    obv = 0.0
-    for i in range(1, len(price_history)):
-        curr = price_history[i].get('close', 0)
-        prev = price_history[i-1].get('close', 0)
-        vol = price_history[i].get('volume', 0)
-        if curr > prev:
-            obv += vol
-        elif curr < prev:
-            obv -= vol
-    return round(obv, 2)
