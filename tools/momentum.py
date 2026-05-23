@@ -76,6 +76,8 @@ def compute_roc(closes: List[float], period: int = 10) -> Dict[str, Any]:
     ROC = (Close - Close[n periods ago]) / Close[n periods ago] * 100
     Positive ROC = bullish momentum, negative = bearish.
     """
+    if period < 1:
+        raise ValueError(f"period must be >= 1, got {period}")
     if len(closes) < period + 1:
         return {"value": None, "signal": "Insufficient data", "pct_change": None}
 
