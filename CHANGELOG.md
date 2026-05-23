@@ -326,3 +326,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [1.7.7] - 2026-05-21
 ### Added
 - Fibonacci Retracement Indicator in tools/fibonacci.py
+
+## [1.7.8] - 2026-05-23
+### Added
+- Momentum Indicators module (Williams %R, CCI, ROC)
+- Unit tests for all momentum indicators
+### Fixed
+- ROC period validation
