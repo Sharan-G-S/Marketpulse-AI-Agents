@@ -68,3 +68,8 @@ def compute_cci(price_history: List[Dict], period: int = 20) -> Dict[str, Any]:
 
     signal = "Bearish" if zone == "Overbought" else "Bullish" if zone == "Oversold" else "Neutral"
     return {"value": cci_val, "signal": signal, "zone": zone}
+
+
+def compute_roc(closes: List[float], period: int = 10) -> Dict[str, Any]:
+    """Compute Rate of Change (ROC) indicator."""
+    pass
