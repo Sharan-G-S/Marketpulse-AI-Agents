@@ -86,3 +86,13 @@ def compute_roc(closes: List[float], period: int = 10) -> Dict[str, Any]:
     roc_val = round((closes[-1] - prev_close) / prev_close * 100, 2)
     signal = "Bullish" if roc_val > 0 else "Bearish" if roc_val < 0 else "Neutral"
     return {"value": roc_val, "signal": signal, "pct_change": f"{roc_val:+.2f}%"}
+
+
+def get_momentum_summary(price_history: List[Dict]) -> Dict[str, Any]:
+    """Aggregate all momentum indicators into a single summary dict."""
+    closes = [r.get("close", 0) for r in price_history if "close" in r]
+    return {
+        "williams_r": compute_williams_r(price_history),
+        "cci": compute_cci(price_history),
+        "roc": compute_roc(closes),
+    }
