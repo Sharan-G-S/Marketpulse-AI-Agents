@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 import pandas as pd
 
 from tools.fibonacci import calculate_fibonacci_levels
+from tools.momentum import get_momentum_summary
 
 
 def compute_rsi(closes: List[float], period: int = 14) -> float:
@@ -324,5 +325,6 @@ def get_all_indicators(price_history: List[Dict]) -> Dict[str, Any]:
         "vwap": compute_vwap(price_history),
         "obv": compute_obv(price_history),
         "fibonacci": calculate_fibonacci_levels(price_history),
+        "momentum": get_momentum_summary(price_history),
         "data_points": len(closes),
     }
