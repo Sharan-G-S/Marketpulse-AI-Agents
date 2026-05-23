@@ -38,5 +38,33 @@ def compute_williams_r(price_history: List[Dict], period: int = 14) -> Dict[str,
 
 
 def compute_cci(price_history: List[Dict], period: int = 20) -> Dict[str, Any]:
-    """Compute Commodity Channel Index (CCI)."""
-    pass
+    """Compute Commodity Channel Index (CCI).
+
+    CCI = (Typical Price - SMA of Typical Price) / (0.015 * Mean Deviation)
+    Above +100 is overbought, below -100 is oversold.
+    """
+    if len(price_history) < period:
+        return {"value": None, "signal": "Insufficient data", "zone": "N/A"}
+
+    window = price_history[-period:]
+    typical_prices = [
+        (r.get("high", r.get("close", 0)) + r.get("low", r.get("close", 0)) + r.get("close", 0)) / 3
+        for r in window
+    ]
+    sma = sum(typical_prices) / period
+    mean_dev = sum(abs(tp - sma) for tp in typical_prices) / period
+
+    if mean_dev == 0:
+        cci_val = 0.0
+    else:
+        cci_val = round((typical_prices[-1] - sma) / (0.015 * mean_dev), 2)
+
+    if cci_val > 100:
+        zone = "Overbought"
+    elif cci_val < -100:
+        zone = "Oversold"
+    else:
+        zone = "Neutral"
+
+    signal = "Bearish" if zone == "Overbought" else "Bullish" if zone == "Oversold" else "Neutral"
+    return {"value": cci_val, "signal": signal, "zone": zone}
