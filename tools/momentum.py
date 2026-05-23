@@ -71,5 +71,18 @@ def compute_cci(price_history: List[Dict], period: int = 20) -> Dict[str, Any]:
 
 
 def compute_roc(closes: List[float], period: int = 10) -> Dict[str, Any]:
-    """Compute Rate of Change (ROC) indicator."""
-    pass
+    """Compute Rate of Change (ROC).
+
+    ROC = (Close - Close[n periods ago]) / Close[n periods ago] * 100
+    Positive ROC = bullish momentum, negative = bearish.
+    """
+    if len(closes) < period + 1:
+        return {"value": None, "signal": "Insufficient data", "pct_change": None}
+
+    prev_close = closes[-(period + 1)]
+    if prev_close == 0:
+        return {"value": None, "signal": "Division by zero", "pct_change": None}
+
+    roc_val = round((closes[-1] - prev_close) / prev_close * 100, 2)
+    signal = "Bullish" if roc_val > 0 else "Bearish" if roc_val < 0 else "Neutral"
+    return {"value": roc_val, "signal": signal, "pct_change": f"{roc_val:+.2f}%"}
