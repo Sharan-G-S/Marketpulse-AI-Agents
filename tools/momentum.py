@@ -35,3 +35,8 @@ def compute_williams_r(price_history: List[Dict], period: int = 14) -> Dict[str,
 
     signal = "Bearish" if zone == "Overbought" else "Bullish" if zone == "Oversold" else "Neutral"
     return {"value": value, "signal": signal, "zone": zone}
+
+
+def compute_cci(price_history: List[Dict], period: int = 20) -> Dict[str, Any]:
+    """Compute Commodity Channel Index (CCI)."""
+    pass
