@@ -285,3 +285,14 @@ Planned upgrades for a programmatic API layer:
 
  *MIT License*
  *Team Project*
+
+## Momentum Indicators
+
+The `tools/momentum.py` module provides additional momentum analysis:
+
+| Indicator | Function | Description |
+|-----------|----------|-------------|
+| Williams %R | `compute_williams_r` | Momentum oscillator (-100 to 0) |
+| CCI | `compute_cci` | Commodity Channel Index |
+| ROC | `compute_roc` | Rate of Change (price momentum %) |
+| Summary | `get_momentum_summary` | All three indicators combined |
