@@ -27,3 +27,22 @@ def weighted_portfolio_return(holdings: List[Dict[str, Any]]) -> float:
     if total_weight == 0:
         return 0.0
     return sum(h.get("weight", 0) * h.get("ann_return", 0) for h in holdings) / total_weight
+
+
+def weighted_portfolio_volatility(holdings: List[Dict[str, Any]]) -> float:
+    """
+    Approximate portfolio volatility as the weighted average of individual
+    ticker volatilities (assumes zero cross-correlation — conservative upper bound).
+
+    Args:
+        holdings: List of dicts with 'weight' and 'ann_volatility'.
+
+    Returns:
+        Weighted volatility as a decimal.
+    """
+    if not holdings:
+        return 0.0
+    total_weight = sum(h.get("weight", 0) for h in holdings)
+    if total_weight == 0:
+        return 0.0
+    return sum(h.get("weight", 0) * h.get("ann_volatility", 0) for h in holdings) / total_weight
