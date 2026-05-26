@@ -140,9 +140,9 @@ def validate_price_history(
 
     errors   = sum(1 for i in issues if i["level"] == "error")
     warnings = sum(1 for i in issues if i["level"] == "warning")
-    total_checks = len(history) * 4 + 2  # 4 OHLC fields per bar + 2 global
-    penalty = errors * 10 + warnings * 3
-    score = max(0.0, round(100.0 - (penalty / max(total_checks, 1)) * 100, 2))
+    # Score: deduct points per issue; cap at 0. Penalty is absolute, not ratio-based.
+    penalty = errors * 15 + warnings * 5
+    score = max(0.0, round(100.0 - penalty, 2))
 
     return {
         "valid":    errors == 0,
@@ -247,4 +247,4 @@ __all__ = [
 ]
 
 _MODULE = "tools.data_quality"
-_VERSION = "1.7.0"
+_VERSION = "1.7.8"
