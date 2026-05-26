@@ -60,3 +60,21 @@ def worst_drawdown_ticker(holdings: List[Dict[str, Any]]) -> Dict[str, Any]:
         return {}
     worst = min(holdings, key=lambda h: h.get("max_drawdown", 0))
     return {"ticker": worst.get("ticker", "N/A"), "max_drawdown": worst.get("max_drawdown", 0)}
+
+
+def best_sharpe_ticker(holdings: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Find the holding with the highest Sharpe ratio.
+
+    Args:
+        holdings: List of dicts with 'ticker' and 'sharpe_ratio'.
+
+    Returns:
+        Dict with 'ticker' and 'sharpe_ratio' of the best performer,
+        or empty dict if holdings is empty.
+    """
+    if not holdings:
+        return {}
+    best = max(holdings, key=lambda h: h.get("sharpe_ratio", 0.0))
+    return {"ticker": best.get("ticker", "N/A"), "sharpe_ratio": best.get("sharpe_ratio", 0.0)}
+
