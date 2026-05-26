@@ -333,3 +333,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Unit tests for all momentum indicators
 ### Fixed
 - ROC period validation
+
+## [1.7.9] - 2026-05-26
+### Added
+- `tools/portfolio_summary.py` — Portfolio-level aggregation module providing weighted portfolio returns, volatility estimation, best Sharpe/worst drawdown ticker identification, risk label classification, and Markdown dashboard formatting.
+- `tests/test_portfolio_summary.py` — 17 unit tests verifying all portfolio summary calculations and edge cases.
+### Fixed
+- `tools/data_quality.py` — Updated duplicate date check to recognize `"timestamp"` alongside `"date"` and `"Date"`.
+- `tools/momentum.py` — Wrapped `compute_roc` in `get_momentum_summary` inside a try-except block to gracefully handle ValueError exception.
+
