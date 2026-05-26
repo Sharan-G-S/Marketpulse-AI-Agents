@@ -121,3 +121,40 @@ def portfolio_risk_label(holdings: List[Dict[str, Any]]) -> str:
         return "Low"
 
 
+def compute_portfolio_summary(holdings: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Main aggregator that computes the portfolio summary from a list of holdings.
+
+    Each holding in the list is expected to have:
+      - 'ticker': str
+      - 'weight': float (0-1)
+      - 'ann_return': float (decimal return)
+      - 'ann_volatility': float (decimal volatility)
+      - 'max_drawdown': float (decimal drawdown)
+      - 'sharpe_ratio': float
+      - 'risk_label': str
+
+    Returns:
+        Dict with aggregated portfolio-level statistics.
+    """
+    if not holdings:
+        return {
+            "total_holdings": 0,
+            "weighted_return": 0.0,
+            "weighted_volatility": 0.0,
+            "worst_drawdown": {},
+            "best_sharpe": {},
+            "portfolio_risk": "Low",
+        }
+
+    return {
+        "total_holdings": len(holdings),
+        "weighted_return": weighted_portfolio_return(holdings),
+        "weighted_volatility": weighted_portfolio_volatility(holdings),
+        "worst_drawdown": worst_drawdown_ticker(holdings),
+        "best_sharpe": best_sharpe_ticker(holdings),
+        "portfolio_risk": portfolio_risk_label(holdings),
+    }
+
+
+
