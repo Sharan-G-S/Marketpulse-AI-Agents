@@ -296,3 +296,19 @@ The `tools/momentum.py` module provides additional momentum analysis:
 | CCI | `compute_cci` | Commodity Channel Index |
 | ROC | `compute_roc` | Rate of Change (price momentum %) |
 | Summary | `get_momentum_summary` | All three indicators combined |
+
+
+## Portfolio Summary
+
+The `tools/portfolio_summary.py` module provides portfolio-level aggregation analytics:
+
+| Metric / Feature | Function | Description |
+|------------------|----------|-------------|
+| Weighted Return | `weighted_portfolio_return` | Computes the weighted average annualised return of the portfolio |
+| Weighted Volatility | `weighted_portfolio_volatility` | Computes the weighted average volatility (conservative upper bound) |
+| Worst Drawdown Ticker | `worst_drawdown_ticker` | Identifies the holding with the worst max drawdown |
+| Best Sharpe Ticker | `best_sharpe_ticker` | Identifies the holding with the highest Sharpe ratio |
+| Portfolio Risk Label | `portfolio_risk_label` | Classifies the overall portfolio risk level (Low to Very High) |
+| Portfolio Summary | `compute_portfolio_summary` | Aggregates all individual holding statistics into a portfolio summary dict |
+| Markdown Dashboard | `format_portfolio_summary` | Formats the portfolio summary dict as a styled Markdown dashboard |
+
