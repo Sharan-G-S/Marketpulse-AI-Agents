@@ -157,4 +157,57 @@ def compute_portfolio_summary(holdings: List[Dict[str, Any]]) -> Dict[str, Any]:
     }
 
 
+def format_portfolio_summary(summary: Dict[str, Any]) -> str:
+    """
+    Render a portfolio summary dict as a beautiful Markdown dashboard.
+
+    Args:
+        summary: Dict returned by compute_portfolio_summary.
+
+    Returns:
+        Markdown string representing the dashboard.
+    """
+    total = summary.get("total_holdings", 0)
+    if total == 0:
+        return (
+            "### 💼 Portfolio Analysis Summary\n\n"
+            "_No active holdings in the portfolio to analyse._"
+        )
+
+    risk = summary.get("portfolio_risk", "Low")
+    risk_emoji = {
+        "Low": "🟢 Low Risk",
+        "Moderate": "🟡 Moderate Risk",
+        "High": "🟠 High Risk",
+        "Very High": "🔴 Very High Risk"
+    }.get(risk, risk)
+
+    ret = summary.get("weighted_return", 0.0) * 100.0
+    vol = summary.get("weighted_volatility", 0.0) * 100.0
+
+    worst = summary.get("worst_drawdown", {})
+    worst_ticker = worst.get("ticker", "N/A")
+    worst_mdd = worst.get("max_drawdown", 0.0) * 100.0
+
+    best = summary.get("best_sharpe", {})
+    best_ticker = best.get("ticker", "N/A")
+    best_sr = best.get("sharpe_ratio", 0.0)
+
+    lines = [
+        "### 💼 Portfolio Analysis Summary",
+        f"**Risk Level:** {risk_emoji}  |  **Total Assets:** {total}",
+        f"**Weighted Portfolio Return:** `{ret:+.2f}%`  |  **Weighted Portfolio Volatility:** `{vol:.2f}%`",
+        "",
+        "#### 📊 Performance & Risk Highlights",
+        f"- 🏆 **Best Performer (Sharpe Ratio):** `{best_ticker}` with a Sharpe ratio of `{best_sr:.2f}`",
+        f"- ⚠️ **Highest Risk Exposure (Max Drawdown):** `{worst_ticker}` with a peak-to-trough drop of `{worst_mdd:.2f}%`",
+        "",
+        "---",
+        "_Note: Weighted portfolio volatility assumes zero cross-correlation as a conservative upper bound._"
+    ]
+
+    return "\n".join(lines)
+
+
+
 
