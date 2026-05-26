@@ -133,7 +133,7 @@ def validate_price_history(
         issues.extend(validate_bar(bar, i))
 
     # Check for duplicate dates
-    dates = [bar.get("date") or bar.get("Date") for bar in history]
+    dates = [bar.get("date") or bar.get("Date") or bar.get("timestamp") for bar in history]
     non_null = [d for d in dates if d is not None]
     if len(non_null) != len(set(non_null)):
         issues.append(_warning("global", "Duplicate date entries detected in price history."))
