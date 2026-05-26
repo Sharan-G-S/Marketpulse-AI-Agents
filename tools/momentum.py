@@ -93,8 +93,14 @@ def compute_roc(closes: List[float], period: int = 10) -> Dict[str, Any]:
 def get_momentum_summary(price_history: List[Dict]) -> Dict[str, Any]:
     """Aggregate all momentum indicators into a single summary dict."""
     closes = [r.get("close", 0) for r in price_history if "close" in r]
+    try:
+        roc_val = compute_roc(closes)
+    except ValueError as e:
+        roc_val = {"value": None, "signal": f"Error: {e}", "pct_change": None}
+
     return {
         "williams_r": compute_williams_r(price_history),
         "cci": compute_cci(price_history),
-        "roc": compute_roc(closes),
+        "roc": roc_val,
     }
+
