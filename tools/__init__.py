@@ -29,5 +29,16 @@ __all__ = [
     "web_search_results",
     "search_analyst_ratings",
     "search_company_background",
+    # portfolio summary
+    "compute_portfolio_summary",
+    "format_portfolio_summary",
+    # momentum
+    "compute_cci",
+    "compute_roc",
+    "compute_williams_r",
+    "get_momentum_summary",
 ]
-from .momentum import compute_williams_r, compute_cci, compute_roc, get_momentum_summary
+
+from .momentum import compute_cci, compute_roc, compute_williams_r, get_momentum_summary
+from .portfolio_summary import compute_portfolio_summary, format_portfolio_summary
+
