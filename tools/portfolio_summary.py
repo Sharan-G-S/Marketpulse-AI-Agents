@@ -46,3 +46,17 @@ def weighted_portfolio_volatility(holdings: List[Dict[str, Any]]) -> float:
     if total_weight == 0:
         return 0.0
     return sum(h.get("weight", 0) * h.get("ann_volatility", 0) for h in holdings) / total_weight
+
+
+def worst_drawdown_ticker(holdings: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Find the holding with the worst (most negative) max drawdown.
+
+    Returns:
+        Dict with 'ticker' and 'max_drawdown' of the worst performer,
+        or empty dict if holdings is empty.
+    """
+    if not holdings:
+        return {}
+    worst = min(holdings, key=lambda h: h.get("max_drawdown", 0))
+    return {"ticker": worst.get("ticker", "N/A"), "max_drawdown": worst.get("max_drawdown", 0)}
