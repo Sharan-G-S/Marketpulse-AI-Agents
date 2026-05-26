@@ -78,8 +78,13 @@ def annualised_return(daily_returns: List[float]) -> float:
         return 0.0
     cumulative = 1.0
     for r in daily_returns:
-        cumulative *= 1 + r
+        factor = 1 + r
+        if factor <= 0:
+            factor = 1e-10  # guard against zero/negative price (degenerate bar)
+        cumulative *= factor
     n = len(daily_returns)
+    if cumulative <= 0:
+        return -1.0
     return cumulative ** (TRADING_DAYS_PER_YEAR / n) - 1
 
 
@@ -250,6 +255,7 @@ def compute_risk_metrics(
     }
 
 # ── Public API ───────────────────────────────────────────────────────────────
+
 __all__ = [
     "TRADING_DAYS_PER_YEAR",
     "DEFAULT_RISK_FREE_RATE",
