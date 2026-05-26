@@ -209,5 +209,22 @@ def format_portfolio_summary(summary: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+# ── Public API ────────────────────────────────────────────────────────────────
+
+__all__ = [
+    "weighted_portfolio_return",
+    "weighted_portfolio_volatility",
+    "worst_drawdown_ticker",
+    "best_sharpe_ticker",
+    "portfolio_risk_label",
+    "compute_portfolio_summary",
+    "format_portfolio_summary",
+]
+
+_MODULE = "tools.portfolio_summary"
+_VERSION = "1.7.9"
+
+
+
 
 
