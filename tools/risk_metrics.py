@@ -40,7 +40,7 @@ def compute_daily_returns(price_history: List[Dict[str, Any]]) -> List[float]:
     if len(closes) < 2:
         return []
     return [
-        (closes[i] - closes[i - 1]) / closes[i - 1]
+        (closes[i] - closes[i - 1]) / closes[i - 1] if closes[i - 1] != 0.0 else 0.0
         for i in range(1, len(closes))
     ]
 
