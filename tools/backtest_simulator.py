@@ -261,5 +261,17 @@ def format_backtest_report(result: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+# ── Public API ────────────────────────────────────────────────────────────────
+
+__all__ = [
+    "run_crossover_backtest",
+    "format_backtest_report",
+]
+
+_MODULE = "tools/backtest_simulator"
+_VERSION = "1.8.0"
+
+
+
 
 
