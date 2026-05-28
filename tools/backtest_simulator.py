@@ -181,4 +181,85 @@ def run_crossover_backtest(
     }
 
 
+def format_backtest_report(result: Dict[str, Any]) -> str:
+    """
+    Format the backtest result dict as a beautiful Markdown report.
+
+    Args:
+        result: Dict returned by run_crossover_backtest.
+
+    Returns:
+        Markdown formatted report string.
+    """
+    status = result.get("status", "Unknown")
+    if status == "Insufficient Data":
+        return (
+            "### 📈 Crossover Backtest Simulation Report\n\n"
+            "❌ **Backtest Failed:** Insufficient price history data to run the simulation."
+        )
+
+    ma_type = result.get("ma_type", "SMA")
+    fast = result.get("fast_period", 50)
+    slow = result.get("slow_period", 200)
+    init_cap = result.get("initial_capital", 10000.0)
+    final_val = result.get("final_value", 10000.0)
+    tot_ret = result.get("total_return_pct", 0.0)
+    bench_ret = result.get("benchmark_return_pct", 0.0)
+    trades_count = result.get("trades_count", 0)
+    win_rate = result.get("win_rate_pct", 0.0)
+    max_dd = result.get("max_drawdown_pct", 0.0)
+    sharpe = result.get("sharpe_ratio", 0.0)
+
+    perf_status = "✅ Outperformed Benchmark" if tot_ret > bench_ret else "❌ Underperformed Benchmark"
+    ret_color = "🟢" if tot_ret >= 0 else "🔴"
+
+    lines = [
+        "### 📈 Crossover Backtest Simulation Report",
+        "",
+        f"**Strategy Configuration:** `{ma_type} Crossover ({fast} / {slow})`",
+        f"**Performance Status:** {perf_status}",
+        "",
+        "#### 📊 Performance & Efficiency Metrics",
+        f"- **Initial Capital:** `${init_cap:,.2f}`",
+        f"- **Final Portfolio Value:** `${final_val:,.2f}`",
+        f"- **Total Strategy Return:** {ret_color} `{tot_ret:+.2f}%`",
+        f"- **Benchmark Return (Buy & Hold):** `{bench_ret:+.2f}%`",
+        f"- **Strategy Annualised Sharpe Ratio:** `{sharpe:.4f}`",
+        f"- **Maximum Portfolio Drawdown:** `{max_dd:.2f}%`",
+        "",
+        "#### 🔄 Trade Activity Summary",
+        f"- **Total Executed Trades:** `{trades_count}`",
+        f"- **Strategy Win Rate:** `{win_rate:.2f}%`",
+        "",
+    ]
+
+    trades = result.get("trades", [])
+    if not trades:
+        lines.append("_No trades were executed during the backtest window._")
+    else:
+        lines.extend([
+            "#### 📝 Transaction Ledger (Chronological)",
+            "",
+            "| Trade # | Buy Date | Buy Price | Sell Date | Sell Price | Return % | Cash After |",
+            "|---------|----------|-----------|-----------|------------|----------|------------|",
+        ])
+        for idx, t in enumerate(trades, 1):
+            sell_date = t.get("sell_date", "ACTIVE")
+            sell_price = f"${t['sell_price']:.2f}" if "sell_price" in t else "—"
+            ret_str = f"{t['return_pct']:+.2f}%" if "return_pct" in t else "—"
+            cash_after = f"${t['cash_after']:,.2f}" if t.get("cash_after", 0.0) > 0 else "—"
+            lines.append(
+                f"| {idx} "
+                f"| {t['date']} "
+                f"| ${t['price']:.2f} "
+                f"| {sell_date} "
+                f"| {sell_price} "
+                f"| {ret_str} "
+                f"| {cash_after} |"
+            )
+
+    return "\n".join(lines)
+
+
+
 
