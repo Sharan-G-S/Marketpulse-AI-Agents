@@ -37,8 +37,13 @@ __all__ = [
     "compute_roc",
     "compute_williams_r",
     "get_momentum_summary",
+    # backtesting
+    "format_backtest_report",
+    "run_crossover_backtest",
 ]
 
+from .backtest_simulator import format_backtest_report, run_crossover_backtest
 from .momentum import compute_cci, compute_roc, compute_williams_r, get_momentum_summary
 from .portfolio_summary import compute_portfolio_summary, format_portfolio_summary
+
 
