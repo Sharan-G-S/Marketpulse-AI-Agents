@@ -312,3 +312,14 @@ The `tools/portfolio_summary.py` module provides portfolio-level aggregation ana
 | Portfolio Summary | `compute_portfolio_summary` | Aggregates all individual holding statistics into a portfolio summary dict |
 | Markdown Dashboard | `format_portfolio_summary` | Formats the portfolio summary dict as a styled Markdown dashboard |
 
+
+## Backtesting Simulator
+
+The `tools/backtest_simulator.py` module provides backtesting analytics for trading strategies:
+
+| Feature / Metric | Function | Description |
+|------------------|----------|-------------|
+| Run Crossover Backtest | `run_crossover_backtest` | Simulates trading a moving average crossover strategy and computes return, buy-and-hold benchmarks, win rates, drawdowns, and annualized Sharpe ratios |
+| Format Backtest Report | `format_backtest_report` | Renders a comprehensive, styled Markdown report showing backtest performance and chronological trade ledgers |
+
+
