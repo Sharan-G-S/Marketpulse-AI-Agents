@@ -191,7 +191,17 @@ def score_diversification(
     if weights is None:
         # Use abs() to handle edge cases of negative values; default to 1.0
         # if market_value is missing or zero so all positions share equal weight.
-        mvs = [max(0.0, float(p.get("market_value") or 1.0)) for p in positions]
+        mvs = []
+        for p in positions:
+            val = p.get("market_value")
+            if val is None or val == "":
+                mv_float = 1.0
+            else:
+                try:
+                    mv_float = float(val)
+                except (ValueError, TypeError):
+                    mv_float = 1.0
+            mvs.append(max(0.0, mv_float))
         total_mv = sum(mvs)
         if total_mv == 0:
             # All positions have zero market value — fall back to equal weighting
