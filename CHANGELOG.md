@@ -342,3 +342,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `tools/data_quality.py` — Updated duplicate date check to recognize `"timestamp"` alongside `"date"` and `"Date"`.
 - `tools/momentum.py` — Wrapped `compute_roc` in `get_momentum_summary` inside a try-except block to gracefully handle ValueError exception.
 
+## [1.8.0] - 2026-05-28
+### Added
+- `tools/backtest_simulator.py` — High-performance moving average crossover Backtesting Simulator providing transaction ledgers, cash/equity curves, win rates, maximum drawdowns, and annualized Sharpe ratios.
+- `tests/test_backtest_simulator.py` — Complete unit test suite verifying all crossover backtesting strategies, statistics, and Markdown formats.
+### Fixed
+- `tools/risk_metrics.py` — Guarded `compute_daily_returns` against division-by-zero errors when a prior day's close price is `0.0`.
+- `tools/diversification_scorer.py` — Hardened `score_diversification` against type conversions when `market_value` contains invalid/non-numeric strings.
+- `tools/earnings_surprise.py` — Hardened consensus and reported EPS/revenue parsing against invalid or blank string values.
+- `tools/watchlist_alerts.py` — Guarded volume spike ratio checks against type mismatch errors.
+- `tools/fibonacci.py` — Resolved dictionary gotcha where `high`/`low` keys having a value of `None` caused TypeErrors instead of falling back to default prices.
+
+
