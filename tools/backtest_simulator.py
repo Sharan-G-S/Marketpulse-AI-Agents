@@ -109,4 +109,76 @@ def run_crossover_backtest(
         current_value = cash + (shares * price)
         portfolio_values.append(current_value)
 
+    # Final calculations
+    final_value = portfolio_values[-1]
+    total_return_pct = round((final_value - initial_capital) / initial_capital * 100, 2)
+
+    # Benchmark: buy and hold starting from the first tradable bar (slow_period)
+    bench_start = closes[slow_period]
+    bench_end = closes[-1]
+    benchmark_return_pct = round((bench_end - bench_start) / bench_start * 100, 2) if bench_start != 0 else 0.0
+
+    # Win rate
+    closed_trades = [t for t in trades if "sell_price" in t]
+    wins = sum(1 for t in closed_trades if t.get("return_pct", 0.0) > 0)
+    win_rate_pct = round(wins / len(closed_trades) * 100, 2) if closed_trades else 0.0
+
+    # Max Drawdown
+    peak = -99999999.0
+    max_dd = 0.0
+    for val in portfolio_values:
+        if val > peak:
+            peak = val
+        dd = (val - peak) / peak if peak > 0 else 0.0
+        if dd < max_dd:
+            max_dd = dd
+    max_drawdown_pct = round(max_dd * 100, 2)
+
+    # Sharpe ratio
+    daily_returns = []
+    for i in range(1, len(portfolio_values)):
+        prev = portfolio_values[i - 1]
+        curr = portfolio_values[i]
+        daily_returns.append((curr - prev) / prev if prev != 0 else 0.0)
+
+    import math
+    if len(daily_returns) >= 2:
+        mean_ret = sum(daily_returns) / len(daily_returns)
+        variance = sum((x - mean_ret) ** 2 for x in daily_returns) / (len(daily_returns) - 1)
+        daily_vol = math.sqrt(variance)
+        vol = daily_vol * math.sqrt(252)
+
+        # Annualised return (geometric)
+        n = len(daily_returns)
+        try:
+            factor = final_value / initial_capital
+            if factor > 0:
+                ann_ret = factor ** (252 / n) - 1
+            else:
+                ann_ret = -1.0
+        except Exception:
+            ann_ret = 0.0
+
+        rf = 0.05
+        sharpe = round((ann_ret - rf) / vol, 4) if vol > 0 else 0.0
+    else:
+        sharpe = 0.0
+
+    return {
+        "ma_type": ma_type,
+        "fast_period": fast_period,
+        "slow_period": slow_period,
+        "initial_capital": initial_capital,
+        "final_value": round(final_value, 2),
+        "total_return_pct": total_return_pct,
+        "benchmark_return_pct": benchmark_return_pct,
+        "trades_count": len(trades),
+        "win_rate_pct": win_rate_pct,
+        "max_drawdown_pct": max_drawdown_pct,
+        "sharpe_ratio": sharpe,
+        "trades": trades,
+        "status": "Success",
+    }
+
+
 
