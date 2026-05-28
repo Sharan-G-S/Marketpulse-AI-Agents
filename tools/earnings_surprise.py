@@ -137,20 +137,31 @@ def compute_earnings_surprise(record: EarningsRecord) -> SurpriseResult:
     """
     ticker    = str(record.get("ticker", "")).upper()
     period    = str(record.get("period", ""))
-    reported  = float(record.get("reported_eps", 0.0))
-    estimated = float(record.get("estimated_eps", 0.0))
+    try:
+        reported = float(record.get("reported_eps", 0.0) or 0.0)
+    except (ValueError, TypeError):
+        reported = 0.0
+
+    try:
+        estimated = float(record.get("estimated_eps", 0.0) or 0.0)
+    except (ValueError, TypeError):
+        estimated = 0.0
 
     eps_pct, eps_abs = compute_eps_surprise(reported, estimated)
     eps_v = eps_verdict(eps_pct)
 
     # Revenue surprise (optional)
-    rev_actual   = record.get("revenue_actual")
+    rev_actual = record.get("revenue_actual")
     rev_estimate = record.get("revenue_estimate")
     rev_pct: Optional[float] = None
-    if rev_actual is not None and rev_estimate and float(rev_estimate) != 0:
-        rev_pct = round(
-            (float(rev_actual) - float(rev_estimate)) / abs(float(rev_estimate)) * 100, 4
-        )
+    if rev_actual is not None and rev_estimate is not None:
+        try:
+            act_val = float(rev_actual)
+            est_val = float(rev_estimate)
+            if est_val != 0:
+                rev_pct = round((act_val - est_val) / abs(est_val) * 100, 4)
+        except (ValueError, TypeError):
+            pass
     rev_v = revenue_verdict(rev_pct)
 
     return {
