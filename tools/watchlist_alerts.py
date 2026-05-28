@@ -155,15 +155,21 @@ def evaluate_watchlist_entry(
             ))
 
     # ── Volume spike ─────────────────────────────────────────────────────────
-    if vol and avg_vol and avg_vol > 0:
-        ratio = vol / avg_vol
-        if ratio >= t["volume_spike"]:
-            alerts.append(_make_alert(
-                ticker, "VOLUME_SPIKE",
-                SEVERITY_INFO,
-                f"{ticker} volume {ratio:.1f}× above average (threshold {t['volume_spike']:.1f}×)",
-                ratio, t["volume_spike"],
-            ))
+    if vol is not None and avg_vol is not None:
+        try:
+            vol_float = float(vol)
+            avg_vol_float = float(avg_vol)
+            if avg_vol_float > 0:
+                ratio = vol_float / avg_vol_float
+                if ratio >= t["volume_spike"]:
+                    alerts.append(_make_alert(
+                        ticker, "VOLUME_SPIKE",
+                        SEVERITY_INFO,
+                        f"{ticker} volume {ratio:.1f}× above average (threshold {t['volume_spike']:.1f}×)",
+                        ratio, t["volume_spike"],
+                    ))
+        except (ValueError, TypeError):
+            pass
 
     return alerts
 
