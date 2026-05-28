@@ -54,3 +54,59 @@ def run_crossover_backtest(
     fast_series = ma_fn(closes, fast_period)
     slow_series = ma_fn(closes, slow_period)
 
+    cash = initial_capital
+    shares = 0.0
+    position_active = False
+    trades: List[Dict[str, Any]] = []
+    portfolio_values: List[float] = []
+
+    # Get dates if available, otherwise use index
+    dates = [
+        str(r.get("date") or r.get("Date") or r.get("timestamp") or idx)
+        for idx, r in enumerate(price_history)
+    ]
+
+    # Pre-populate portfolio value for initial period
+    for i in range(slow_period):
+        portfolio_values.append(initial_capital)
+
+    for i in range(slow_period, len(closes)):
+        price = closes[i]
+        date_str = dates[i]
+
+        f_prev, f_curr = fast_series[i - 1], fast_series[i]
+        s_prev, s_curr = slow_series[i - 1], slow_series[i]
+
+        # Standard crossovers
+        if f_prev is not None and s_prev is not None and f_curr is not None and s_curr is not None:
+            was_below = f_prev < s_prev
+            now_above = f_curr > s_curr
+            was_above = f_prev > s_prev
+            now_below = f_curr < s_curr
+
+            if was_below and now_above and not position_active:
+                # Buy signal
+                shares = cash / price
+                cash = 0.0
+                position_active = True
+                trades.append({
+                    "type": "BUY",
+                    "date": date_str,
+                    "price": price,
+                    "shares": shares,
+                    "cash_after": cash,
+                })
+            elif was_above and now_below and position_active:
+                # Sell signal
+                cash = shares * price
+                shares = 0.0
+                position_active = False
+                trades[-1]["sell_date"] = date_str
+                trades[-1]["sell_price"] = price
+                trades[-1]["return_pct"] = round((price - trades[-1]["price"]) / trades[-1]["price"] * 100, 2)
+                trades[-1]["cash_after"] = cash
+
+        current_value = cash + (shares * price)
+        portfolio_values.append(current_value)
+
+
