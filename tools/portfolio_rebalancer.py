@@ -213,6 +213,18 @@ def format_rebalance_report(result: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+# ── Public API ────────────────────────────────────────────────────────────────
+
+__all__ = [
+    "compute_portfolio_rebalancing",
+    "format_rebalance_report",
+]
+
+_MODULE = "tools.portfolio_rebalancer"
+_VERSION = "1.9.0"
+
+
+
 
 
 
