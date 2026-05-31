@@ -120,5 +120,99 @@ def compute_portfolio_rebalancing(
     }
 
 
+def format_rebalance_report(result: Dict[str, Any]) -> str:
+    """
+    Format the rebalancing result dict as a beautiful Markdown dashboard.
+
+    Args:
+        result: Dict returned by compute_portfolio_rebalancing.
+
+    Returns:
+        Markdown formatted report string.
+    """
+    status = result.get("status", "Unknown")
+    if status == "No Targets Provided":
+        return (
+            "### ⚖️ Portfolio Rebalancing Analysis\n\n"
+            "❌ **Rebalancing Skipped:** No target allocations were provided."
+        )
+    if status == "Invalid Target Weights":
+        return (
+            "### ⚖️ Portfolio Rebalancing Analysis\n\n"
+            "❌ **Rebalancing Skipped:** Provided target weights are invalid or sum to zero."
+        )
+
+    total_value = result.get("total_value", 0.0)
+    mad_pct = result.get("target_deviation_mad_pct", 0.0)
+    positions = result.get("positions", [])
+    actions = result.get("rebalance_actions", [])
+
+    if mad_pct < 1.0:
+        health_status = "🟢 Perfectly Balanced (MAD < 1%)"
+    elif mad_pct < 5.0:
+        health_status = "🟡 Slight Deviation (MAD < 5%)"
+    else:
+        health_status = "🔴 Significant Rebalancing Required (MAD ≥ 5%)"
+
+    lines = [
+        "### ⚖️ Portfolio Rebalancing Analysis",
+        "",
+        f"**Portfolio Alignment Status:** {health_status}",
+        f"**Total Portfolio Value:** `${total_value:,.2f}`  |  **Mean Absolute Deviation (MAD):** `{mad_pct:.2f}%`",
+        "",
+        "#### 📊 Current vs. Target Allocations",
+        "",
+        "| Ticker | Current Value | Current Weight | Target Weight | Target Value | Deviation ($) | Deviation (%) |",
+        "|--------|---------------|----------------|---------------|--------------|---------------|---------------|",
+    ]
+
+    for p in positions:
+        cur_val = f"${p['current_value']:,.2f}"
+        tgt_val = f"${p['target_value']:,.2f}"
+        cur_w = f"{p['current_weight']*100:.2f}%"
+        tgt_w = f"{p['target_weight']*100:.2f}%"
+
+        diff_val = p['deviation_value']
+        diff_val_str = f"+${diff_val:,.2f}" if diff_val >= 0 else f"-${abs(diff_val):,.2f}"
+        diff_pct = p['deviation_pct'] * 100
+        diff_pct_str = f"+{diff_pct:.2f}%" if diff_pct >= 0 else f"{diff_pct:.2f}%"
+
+        lines.append(
+            f"| `{p['ticker']}` "
+            f"| {cur_val} "
+            f"| {cur_w} "
+            f"| {tgt_w} "
+            f"| {tgt_val} "
+            f"| {diff_val_str} "
+            f"| {diff_pct_str} |"
+        )
+
+    lines.append("")
+    lines.append("#### 🛠️ Recommended Rebalancing Actions")
+    lines.append("")
+
+    if not actions:
+        lines.append("_Portfolio is aligned with targets. No rebalancing trades required._")
+    else:
+        lines.extend([
+            "| Action | Ticker | Trade Amount | Est. Shares | Share Price |",
+            "|--------|--------|--------------|-------------|-------------|",
+        ])
+        for a in actions:
+            action_badge = "🟢 BUY" if a["action"] == "BUY" else "🔴 SELL"
+            shares_str = f"{a['shares']:.4f}" if a["shares"] > 0 else "—"
+            price_str = f"${a['price']:.2f}" if a["price"] > 0 else "—"
+            lines.append(
+                f"| {action_badge} "
+                f"| `{a['ticker']}` "
+                f"| ${a['amount']:,.2f} "
+                f"| {shares_str} "
+                f"| {price_str} |"
+            )
+
+    return "\n".join(lines)
+
+
+
 
 
