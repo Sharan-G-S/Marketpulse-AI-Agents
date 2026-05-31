@@ -152,7 +152,7 @@ def run_crossover_backtest(
         n = len(daily_returns)
         try:
             factor = final_value / initial_capital
-            if factor > 0:
+            if factor > 0 and n > 0:
                 ann_ret = factor ** (252 / n) - 1
             else:
                 ann_ret = -1.0
