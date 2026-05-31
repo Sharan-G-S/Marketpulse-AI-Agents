@@ -52,3 +52,25 @@ def compute_portfolio_rebalancing(
     # Calculate total portfolio value
     total_value = sum(max(0.0, float(h.get("market_value", 0.0) or 0.0)) for h in holdings)
 
+    # Map current holdings by upper ticker for quick lookup
+    current_holdings = {}
+    prices = {}
+    for h in holdings:
+        ticker = str(h.get("ticker", "")).upper()
+        if ticker:
+            current_holdings[ticker] = max(0.0, float(h.get("market_value", 0.0) or 0.0))
+            prices[ticker] = max(0.0, float(h.get("price", 0.0) or 0.0))
+
+    # All tickers present in either target_allocations or current_holdings
+    all_tickers = sorted(list(set(normalized_targets.keys()) | set(current_holdings.keys())))
+
+    positions_report = []
+    for ticker in all_tickers:
+        cur_val = current_holdings.get(ticker, 0.0)
+        tgt_weight = normalized_targets.get(ticker, 0.0)
+        tgt_val = round(tgt_weight * total_value, 2)
+        cur_weight = round(cur_val / total_value, 4) if total_value > 0 else 0.0
+        diff_val = round(cur_val - tgt_val, 2)
+        diff_pct = round(cur_weight - tgt_weight, 4)
+
+
