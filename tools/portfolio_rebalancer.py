@@ -73,4 +73,34 @@ def compute_portfolio_rebalancing(
         diff_val = round(cur_val - tgt_val, 2)
         diff_pct = round(cur_weight - tgt_weight, 4)
 
+        # Determine trade actions
+        action = "HOLD"
+        shares_to_trade = 0.0
+        price = prices.get(ticker, 0.0)
+
+        # Threshold to avoid trivial trades (e.g. less than $1.00 deviation)
+        if abs(diff_val) >= 1.0:
+            if diff_val > 0:
+                action = "SELL"
+            else:
+                action = "BUY"
+
+            if price > 0:
+                shares_to_trade = round(abs(diff_val) / price, 4)
+
+        positions_report.append({
+            "ticker": ticker,
+            "current_value": cur_val,
+            "current_weight": cur_weight,
+            "target_weight": tgt_weight,
+            "target_value": tgt_val,
+            "deviation_value": diff_val,
+            "deviation_pct": diff_pct,
+            "action": action,
+            "amount": abs(diff_val),
+            "shares": shares_to_trade,
+            "price": price,
+        })
+
+
 
