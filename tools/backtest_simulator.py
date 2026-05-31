@@ -7,12 +7,12 @@ Starting with a base capital, it tracks transactions, cash, and portfolio equity
 No LLM required — pure mathematical simulation.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from tools.ma_crossover import compute_ema, compute_sma, extract_closes
 
 
-def run_crossover_backtest(
+def run_crossover_backtest(  # noqa: C901
     price_history: List[Dict[str, Any]],
     fast_period: int = 50,
     slow_period: int = 200,
@@ -86,7 +86,7 @@ def run_crossover_backtest(
 
             if was_below and now_above and not position_active:
                 # Buy signal
-                shares = cash / price
+                shares = cash / price if price > 0.0 else 0.0
                 cash = 0.0
                 position_active = True
                 trades.append({
@@ -103,7 +103,8 @@ def run_crossover_backtest(
                 position_active = False
                 trades[-1]["sell_date"] = date_str
                 trades[-1]["sell_price"] = price
-                trades[-1]["return_pct"] = round((price - trades[-1]["price"]) / trades[-1]["price"] * 100, 2)
+                p_buy = trades[-1]["price"]
+                trades[-1]["return_pct"] = round((price - p_buy) / p_buy * 100, 2) if p_buy > 0.0 else 0.0
                 trades[-1]["cash_after"] = cash
 
         current_value = cash + (shares * price)
@@ -270,8 +271,3 @@ __all__ = [
 
 _MODULE = "tools/backtest_simulator"
 _VERSION = "1.8.0"
-
-
-
-
-
