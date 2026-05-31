@@ -102,5 +102,23 @@ def compute_portfolio_rebalancing(
             "price": price,
         })
 
+    # Calculate Mean Absolute Deviation (MAD) of weights
+    if positions_report:
+        mad = sum(abs(p["deviation_pct"]) for p in positions_report) / len(positions_report)
+        mad_pct = round(mad * 100, 2)
+    else:
+        mad_pct = 0.0
+
+    rebalance_actions = [p for p in positions_report if p["action"] != "HOLD"]
+
+    return {
+        "total_value": round(total_value, 2),
+        "target_deviation_mad_pct": mad_pct,
+        "positions": positions_report,
+        "rebalance_actions": rebalance_actions,
+        "status": "Success",
+    }
+
+
 
 
