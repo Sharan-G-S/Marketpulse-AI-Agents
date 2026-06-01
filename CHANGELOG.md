@@ -353,4 +353,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `tools/watchlist_alerts.py` — Guarded volume spike ratio checks against type mismatch errors.
 - `tools/fibonacci.py` — Resolved dictionary gotcha where `high`/`low` keys having a value of `None` caused TypeErrors instead of falling back to default prices.
 
+## [1.9.0] - 2026-06-01
+### Added
+- `tools/portfolio_rebalancer.py` — Portfolio Allocation & Rebalancing Engine calculates position deviations and trade actions (BUY/SELL amounts and shares) to align with target allocations, including MAD tracking error and Markdown dashboard reports.
+- `tests/test_portfolio_rebalancer.py` — Comprehensive unit test suite covering weight normalization, deviation calculations, trade recommendations, and markdown formatting.
+### Fixed
+- `tools/backtest_simulator.py` — Guarded against potential division by zero on zero-price and purchase price inside crossover trade evaluations.
+- `tools/ma_crossover.py` — Added safety guards against zero or negative moving average periods in simple and exponential moving averages.
+- `tools/risk_metrics.py` — Hardened `sharpe_ratio` and `sortino_ratio` calculations against empty return list input or zero/NaN volatilities.
+- `tools/diversification_scorer.py` — Guarded `_count_score` against zero or negative capping parameters to prevent square-root or division faults.
+- `tools/earnings_surprise.py` — Added tiny float `abs(estimated) < 1e-9` and NaN consensus guards in `compute_eps_surprise`.
+- `tools/watchlist_alerts.py` — Hardened average volume spike checks with tiny float and NaN validations.
+
 
