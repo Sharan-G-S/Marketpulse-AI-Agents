@@ -11,7 +11,7 @@ No LLM required — pure arithmetic (no external imports beyond math).
 """
 
 import math
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 # ── Type aliases ──────────────────────────────────────────────────────────────
 
@@ -104,7 +104,7 @@ def _count_score(n: int, cap: int = 20) -> float:
     Map position count to 0-100 score, capped at *cap* positions = 100.
     Uses square-root scaling so early diversification is heavily rewarded.
     """
-    if n <= 0:
+    if n <= 0 or cap <= 0:
         return 0.0
     return round(min(100.0, (math.sqrt(n) / math.sqrt(cap)) * 100), 2)
 
@@ -174,7 +174,7 @@ def score_diversification(
         HHI, sector stats, and actionable suggestions.
     """
     sm = sector_map or {}
-    n  = len(positions)
+    n = len(positions)
 
     # Guard: empty portfolio — return zero score immediately
     if n == 0:
@@ -218,26 +218,26 @@ def score_diversification(
         sector_weights = sw
 
     # Scores
-    hhi        = compute_hhi(weights)
-    entropy    = sector_entropy(sector_weights)
-    sec_score  = _sector_score(entropy)
+    hhi = compute_hhi(weights)
+    entropy = sector_entropy(sector_weights)
+    sec_score = _sector_score(entropy)
     conc_score = _concentration_score(hhi)
-    cnt_score  = _count_score(n)
+    cnt_score = _count_score(n)
 
     # Composite (weighted average)
     composite = round(0.40 * sec_score + 0.40 * conc_score + 0.20 * cnt_score, 2)
-    grade     = _grade(composite)
+    grade = _grade(composite)
 
     # Dominant sector — safe when sector_weights may be empty
     if sector_weights:
         dominant_sector = max(sector_weights, key=lambda k: sector_weights[k])  # type: ignore[arg-type]
-        dominant_pct    = round(sector_weights[dominant_sector] * 100, 2)
+        dominant_pct = round(sector_weights[dominant_sector] * 100, 2)
     else:
         dominant_sector = "Unknown"
-        dominant_pct    = 0.0
+        dominant_pct = 0.0
 
     n_sectors = len(sector_weights)
-    tips      = _suggestions(n, n_sectors, dominant_pct, hhi, grade)
+    tips = _suggestions(n, n_sectors, dominant_pct, hhi, grade)
 
     interp_map = {
         "A": "Well-diversified — excellent spread across sectors and positions.",
