@@ -8,6 +8,7 @@ the result into beat/miss/meet tiers with a % surprise score.
 No LLM required — pure arithmetic.
 """
 
+import math
 from typing import Any, Dict, List, Optional, Tuple
 
 # ── Type aliases ──────────────────────────────────────────────────────────────
@@ -46,10 +47,10 @@ SurpriseResult = Dict[str, Any]
 # ── Thresholds ────────────────────────────────────────────────────────────────
 
 SURPRISE_THRESHOLDS = {
-    "strong_beat":  5.0,   # ≥ +5% surprise = Strong Beat
-    "beat":         1.0,   # ≥ +1% surprise = Beat
-    "meet":        -1.0,   # ≥ -1% surprise = Meet (within ±1%)
-    "miss":        -5.0,   # ≥ -5% surprise = Miss
+    "strong_beat": 5.0,   # ≥ +5% surprise = Strong Beat
+    "beat": 1.0,   # ≥ +1% surprise = Beat
+    "meet": -1.0,   # ≥ -1% surprise = Meet (within ±1%)
+    "miss": -5.0,   # ≥ -5% surprise = Miss
     # < -5% = Strong Miss
 }
 
@@ -81,7 +82,7 @@ def compute_eps_surprise(
         (50.0, 0.1)
     """
     surprise_abs = round(reported - estimated, 4)
-    if estimated == 0:
+    if estimated == 0.0 or abs(estimated) < 1e-9 or math.isnan(estimated):
         return (0.0, surprise_abs)
     surprise_pct = round((reported - estimated) / abs(estimated) * 100, 4)
     return (surprise_pct, surprise_abs)
@@ -135,8 +136,8 @@ def compute_earnings_surprise(record: EarningsRecord) -> SurpriseResult:
     Returns:
         SurpriseResult dict with all computed fields.
     """
-    ticker    = str(record.get("ticker", "")).upper()
-    period    = str(record.get("period", ""))
+    ticker = str(record.get("ticker", "")).upper()
+    period = str(record.get("period", ""))
     try:
         reported = float(record.get("reported_eps", 0.0) or 0.0)
     except (ValueError, TypeError):
@@ -202,9 +203,9 @@ def earnings_trend(results: List[SurpriseResult]) -> Dict[str, Any]:
     if not results:
         return {"beat_count": 0, "miss_count": 0, "avg_surprise_pct": 0.0, "trend_label": "N/A"}
 
-    beats  = sum(1 for r in results if r["eps_surprise_pct"] >= SURPRISE_THRESHOLDS["beat"])
+    beats = sum(1 for r in results if r["eps_surprise_pct"] >= SURPRISE_THRESHOLDS["beat"])
     misses = sum(1 for r in results if r["eps_surprise_pct"] < SURPRISE_THRESHOLDS["meet"])
-    avg    = round(sum(r["eps_surprise_pct"] for r in results) / len(results), 4)
+    avg = round(sum(r["eps_surprise_pct"] for r in results) / len(results), 4)
 
     if beats >= len(results) * 0.75:
         label = "Consistent Beater 🌟"
