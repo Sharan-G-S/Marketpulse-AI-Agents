@@ -79,3 +79,22 @@ class TestBacktestSimulator:
         assert "Crossover Backtest Simulation Report" in report
         assert "Performance & Efficiency Metrics" in report
         assert "Transaction Ledger" in report
+
+    def test_crossover_zero_price(self):
+        history = _make_wave_history(n=250, base=100.0)
+        # Inject zero/negative prices
+        for h in history[40:60]:
+            h["close"] = 0.0
+            h["open"] = 0.0
+            h["high"] = 0.0
+            h["low"] = 0.0
+        res = run_crossover_backtest(history, fast_period=10, slow_period=30)
+        assert res["status"] == "Success"
+
+    def test_zero_division_return_pct(self):
+        history = _make_wave_history(n=250, base=100.0)
+        # Make the prices zero during some crossover trades
+        for h in history[20:40]:
+            h["close"] = 0.0
+        res = run_crossover_backtest(history, fast_period=5, slow_period=15)
+        assert res["status"] == "Success"
