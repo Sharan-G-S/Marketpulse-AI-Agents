@@ -5,9 +5,10 @@ Computes SMA and EMA series and detects Golden Cross / Death Cross
 crossover events with signal history. No external dependencies — pure Python.
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 # ── Moving average computation ────────────────────────────────────────────────
+
 
 def compute_sma(prices: List[float], period: int) -> List[Optional[float]]:
     """
@@ -21,6 +22,9 @@ def compute_sma(prices: List[float], period: int) -> List[Optional[float]]:
         List of SMA values, same length as prices.
         Values before the first full window are None.
     """
+    if period <= 0:
+        return [None] * len(prices)
+
     result: List[Optional[float]] = []
     for i in range(len(prices)):
         if i + 1 < period:
@@ -45,7 +49,7 @@ def compute_ema(prices: List[float], period: int) -> List[Optional[float]]:
         List of EMA values, same length as prices.
         Values before the first complete SMA seed are None.
     """
-    if len(prices) < period:
+    if len(prices) < period or period <= 0:
         return [None] * len(prices)
 
     k = 2.0 / (period + 1)
