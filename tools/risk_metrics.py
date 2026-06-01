@@ -15,7 +15,7 @@ No LLM required — pure statistics.
 """
 
 import math
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 # ── Constants ──────────────────────────────────────────────────────────────
 
@@ -103,8 +103,10 @@ def sharpe_ratio(
     Sharpe Ratio = (annualised_return − risk_free_rate) / annualised_volatility.
     Returns 0.0 if volatility is zero.
     """
+    if not daily_returns:
+        return 0.0
     vol = annualised_volatility(daily_returns)
-    if vol == 0:
+    if vol == 0.0 or math.isnan(vol):
         return 0.0
     ar = annualised_return(daily_returns)
     return round((ar - risk_free_rate) / vol, 4)
@@ -118,11 +120,13 @@ def sortino_ratio(
     Sortino Ratio uses only downside deviation (negative returns) as the
     risk denominator instead of total volatility.
     """
+    if not daily_returns:
+        return 0.0
     downside = [r for r in daily_returns if r < 0]
     if len(downside) < 2:
         return 0.0
     downside_std = _std(downside) * math.sqrt(TRADING_DAYS_PER_YEAR)
-    if downside_std == 0:
+    if downside_std == 0.0 or math.isnan(downside_std):
         return 0.0
     ar = annualised_return(daily_returns)
     return round((ar - risk_free_rate) / downside_std, 4)
@@ -176,7 +180,7 @@ def calmar_ratio(
 
 # ── Risk label ──────────────────────────────────────────────────────────────
 
-def risk_label(sharpe: float, mdd: float, vol: float) -> str:
+def risk_label(sharpe: float, mdd: float, vol: float) -> str:  # noqa: C901
     """
     Classify overall risk into Low / Moderate / High / Very High based on
     Sharpe, max-drawdown, and annualised volatility.
@@ -232,13 +236,13 @@ def compute_risk_metrics(
         sharpe, sortino, max_drawdown, var_95, calmar, risk_label.
     """
     daily_rets = compute_daily_returns(price_history)
-    ar   = round(annualised_return(daily_rets), 6)
-    vol  = round(annualised_volatility(daily_rets), 6)
-    sh   = sharpe_ratio(daily_rets, risk_free_rate)
-    so   = sortino_ratio(daily_rets, risk_free_rate)
-    mdd  = max_drawdown(price_history)
-    var  = value_at_risk_95(daily_rets)
-    cal  = calmar_ratio(daily_rets, price_history)
+    ar = round(annualised_return(daily_rets), 6)
+    vol = round(annualised_volatility(daily_rets), 6)
+    sh = sharpe_ratio(daily_rets, risk_free_rate)
+    so = sortino_ratio(daily_rets, risk_free_rate)
+    mdd = max_drawdown(price_history)
+    var = value_at_risk_95(daily_rets)
+    cal = calmar_ratio(daily_rets, price_history)
 
     return {
         "ticker":         ticker.upper(),
@@ -253,6 +257,7 @@ def compute_risk_metrics(
         "risk_label":     risk_label(sh, mdd, vol),
         "risk_free_rate": risk_free_rate,
     }
+
 
 # ── Public API ───────────────────────────────────────────────────────────────
 
