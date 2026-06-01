@@ -55,8 +55,8 @@ DEFAULT_WATCHLIST_THRESHOLDS: Dict[str, float] = {
 # ── Alert severity ────────────────────────────────────────────────────────────
 
 SEVERITY_CRITICAL = "CRITICAL"
-SEVERITY_WARNING  = "WARNING"
-SEVERITY_INFO     = "INFO"
+SEVERITY_WARNING = "WARNING"
+SEVERITY_INFO = "INFO"
 
 
 # ── Core alert evaluation ─────────────────────────────────────────────────────
@@ -103,10 +103,10 @@ def evaluate_watchlist_entry(
 
     alerts: List[AlertRecord] = []
     ticker = entry.get("ticker", "???").upper()
-    chg    = entry.get("change_pct", 0.0) or 0.0
-    price  = entry.get("current_price", 0.0) or 0.0
-    rsi    = entry.get("rsi")
-    vol    = entry.get("volume")
+    chg = entry.get("change_pct", 0.0) or 0.0
+    price = entry.get("current_price", 0.0) or 0.0
+    rsi = entry.get("rsi")
+    vol = entry.get("volume")
     avg_vol = entry.get("avg_volume")
 
     # ── Price change spike ────────────────────────────────────────────────────
@@ -157,9 +157,10 @@ def evaluate_watchlist_entry(
     # ── Volume spike ─────────────────────────────────────────────────────────
     if vol is not None and avg_vol is not None:
         try:
+            import math
             vol_float = float(vol)
             avg_vol_float = float(avg_vol)
-            if avg_vol_float > 0:
+            if avg_vol_float > 1e-9 and not math.isnan(avg_vol_float) and not math.isnan(vol_float):
                 ratio = vol_float / avg_vol_float
                 if ratio >= t["volume_spike"]:
                     alerts.append(_make_alert(
@@ -207,6 +208,7 @@ def watchlist_alert_summary(alerts: List[AlertRecord]) -> Dict[str, Any]:
         status = "🟢 All watchlist tickers within normal ranges"
 
     return {"counts": counts, "status": status, "total": len(alerts)}
+
 
 # ── Public API ────────────────────────────────────────────────────────────────
 __all__ = [
