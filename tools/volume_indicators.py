@@ -158,3 +158,115 @@ def compute_cmf(price_history: List[Dict[str, Any]], period: int = 20) -> List[O
                 cmf_series.append(round(sum_mfv / sum_vol, 4))
 
     return cmf_series
+
+
+def generate_volume_signals(price_history: List[Dict[str, Any]]) -> Dict[str, Any]:  # noqa: C901
+    """
+    Generate trend signals based on On-Balance Volume (OBV),
+    Accumulation/Distribution Line (ADL), and Chaikin Money Flow (CMF).
+
+    Args:
+        price_history: List of OHLCV dicts, sorted oldest-first.
+
+    Returns:
+        Dict with current values, trends, signals, and interpretation.
+    """
+    if len(price_history) < 2:
+        return {
+            "obv": None,
+            "adl": None,
+            "cmf": None,
+            "obv_trend": "Neutral",
+            "adl_trend": "Neutral",
+            "cmf_signal": "Neutral",
+            "composite_signal": "Insufficient Data",
+            "interpretation": "Insufficient history to analyze volume trends.",
+        }
+
+    obv_series = compute_obv(price_history)
+    adl_series = compute_adl(price_history)
+    cmf_series = compute_cmf(price_history, period=min(20, len(price_history)))
+
+    last_obv = obv_series[-1]
+    last_adl = adl_series[-1]
+    last_cmf = cmf_series[-1]
+
+    # Trend calculation lookback window (up to 5 bars)
+    lookback = min(5, len(price_history) - 1)
+    prev_obv = obv_series[-1 - lookback]
+    prev_adl = adl_series[-1 - lookback]
+
+    # OBV trend
+    if last_obv > prev_obv:
+        obv_trend = "Bullish Accumulation"
+    elif last_obv < prev_obv:
+        obv_trend = "Bearish Distribution"
+    else:
+        obv_trend = "Flat"
+
+    # ADL trend
+    if last_adl > prev_adl:
+        adl_trend = "Bullish Accumulation"
+    elif last_adl < prev_adl:
+        adl_trend = "Bearish Distribution"
+    else:
+        adl_trend = "Flat"
+
+    # CMF Signal
+    if last_cmf is not None:
+        if last_cmf > 0.05:
+            cmf_signal = "Bullish"
+        elif last_cmf < -0.05:
+            cmf_signal = "Bearish"
+        else:
+            cmf_signal = "Neutral"
+    else:
+        cmf_signal = "Neutral"
+
+    # Composite signal
+    bullish_votes = 0
+    bearish_votes = 0
+
+    if "Bullish" in obv_trend:
+        bullish_votes += 1
+    elif "Bearish" in obv_trend:
+        bearish_votes += 1
+
+    if "Bullish" in adl_trend:
+        bullish_votes += 1
+    elif "Bearish" in adl_trend:
+        bearish_votes += 1
+
+    if cmf_signal == "Bullish":
+        bullish_votes += 1
+    elif cmf_signal == "Bearish":
+        bearish_votes += 1
+
+    if bullish_votes >= 2:
+        composite = "Bullish"
+        interpretation = (
+            f"Strong buying pressure detected across volume indicators. "
+            f"CMF at {last_cmf if last_cmf is not None else 0:.4f} and rising trends "
+            f"in OBV/ADL support an upward price continuation."
+        )
+    elif bearish_votes >= 2:
+        composite = "Bearish"
+        interpretation = (
+            f"Selling pressure and distribution detected across volume indicators. "
+            f"CMF at {last_cmf if last_cmf is not None else 0:.4f} and declining trends "
+            f"in OBV/ADL indicate institutional distribution."
+        )
+    else:
+        composite = "Neutral"
+        interpretation = "Volume indicators show conflicting or flat momentum. The trend is range-bound."
+
+    return {
+        "obv": last_obv,
+        "adl": last_adl,
+        "cmf": last_cmf,
+        "obv_trend": obv_trend,
+        "adl_trend": adl_trend,
+        "cmf_signal": cmf_signal,
+        "composite_signal": composite,
+        "interpretation": interpretation,
+    }
