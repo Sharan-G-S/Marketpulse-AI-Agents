@@ -53,3 +53,48 @@ def compute_obv(price_history: List[Dict[str, Any]]) -> List[float]:
         obv_series.append(round(current_obv, 2))
 
     return obv_series
+
+
+def compute_adl(price_history: List[Dict[str, Any]]) -> List[float]:
+    """
+    Compute Accumulation/Distribution Line (ADL) series.
+
+    Args:
+        price_history: List of OHLCV dicts, sorted oldest-first.
+
+    Returns:
+        List of ADL values, same length as price_history.
+    """
+    if not price_history:
+        return []
+
+    adl_series = []
+    current_adl = 0.0
+
+    for bar in price_history:
+        close = bar.get("close") or bar.get("Close")
+        high = bar.get("high") or bar.get("High")
+        low = bar.get("low") or bar.get("Low")
+        volume = bar.get("volume") or bar.get("Volume")
+
+        try:
+            close_val = float(close) if close is not None else 0.0
+            high_val = float(high) if high is not None else 0.0
+            low_val = float(low) if low is not None else 0.0
+            vol_val = float(volume) if volume is not None else 0.0
+        except (ValueError, TypeError):
+            close_val = 0.0
+            high_val = 0.0
+            low_val = 0.0
+            vol_val = 0.0
+
+        if high_val - low_val == 0.0:
+            mfm = 0.0
+        else:
+            mfm = ((close_val - low_val) - (high_val - close_val)) / (high_val - low_val)
+
+        mfv = mfm * vol_val
+        current_adl += mfv
+        adl_series.append(round(current_adl, 2))
+
+    return adl_series
