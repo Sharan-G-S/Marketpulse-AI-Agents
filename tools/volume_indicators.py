@@ -270,3 +270,16 @@ def generate_volume_signals(price_history: List[Dict[str, Any]]) -> Dict[str, An
         "composite_signal": composite,
         "interpretation": interpretation,
     }
+
+
+# ── Public API ────────────────────────────────────────────────────────────────
+
+__all__ = [
+    "compute_obv",
+    "compute_adl",
+    "compute_cmf",
+    "generate_volume_signals",
+]
+
+_MODULE = "tools/volume_indicators"
+_VERSION = "2.0.0"
