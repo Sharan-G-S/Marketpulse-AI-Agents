@@ -364,5 +364,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `tools/diversification_scorer.py` — Guarded `_count_score` against zero or negative capping parameters to prevent square-root or division faults.
 - `tools/earnings_surprise.py` — Added tiny float `abs(estimated) < 1e-9` and NaN consensus guards in `compute_eps_surprise`.
 - `tools/watchlist_alerts.py` — Hardened average volume spike checks with tiny float and NaN validations.
-
-
+## [2.0.0] - 2026-06-03
+### Added
+- `tools/volume_indicators.py` — High-performance volume indicators module providing On-Balance Volume (OBV), Accumulation/Distribution Line (ADL), and Chaikin Money Flow (CMF) series and trend signal generation.
+- `tests/test_volume_indicators.py` — Comprehensive unit test suite with 14 tests verifying calculations, zero division handling, invalid data handling, and trend signal logic.
