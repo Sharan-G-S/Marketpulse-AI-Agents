@@ -51,7 +51,7 @@ Enter any stock ticker → 5 AI agents collaborate autonomously → Full investm
 
 
 
-## ✨ Feature Suite (v1.9.0)
+## ✨ Feature Suite (v2.0.0)
 
 ### Analytics Tools
 
@@ -61,6 +61,7 @@ Enter any stock ticker → 5 AI agents collaborate autonomously → Full investm
 | `tools/portfolio_performance.py` | Position P&L, market value, weight %, best/worst performer |
 | `tools/diversification_scorer.py` | HHI + sector entropy composite diversification score (A-F) |
 | `tools/portfolio_rebalancer.py` | Target allocation rebalancer (BUY/SELL amounts & shares) |
+| `tools/volume_indicators.py` | OBV, ADL, Chaikin Money Flow series and trend signals |
 | `tools/earnings_surprise.py` | EPS/revenue surprise %, verdict tiers, multi-period trend |
 | `tools/ma_crossover.py` | SMA/EMA series, Golden Cross & Death Cross detection |
 | `tools/watchlist_alerts.py` | Price/RSI/volume threshold alerts for watchlists |
@@ -334,3 +335,13 @@ The `tools/portfolio_rebalancer.py` module provides target allocation rebalancin
 | Format Rebalance Report | `format_rebalance_report` | Renders a beautiful, styled Markdown rebalancing dashboard report including current vs target allocation tables and recommended actions ledger |
 
 
+## Volume Indicators
+
+The `tools/volume_indicators.py` module provides volume-based indicator calculations and signal analysis:
+
+| Feature / Metric | Function | Description |
+|------------------|----------|-------------|
+| Compute OBV | `compute_obv` | Calculates the On-Balance Volume cumulative series |
+| Compute ADL | `compute_adl` | Calculates the Accumulation/Distribution Line cumulative series |
+| Compute CMF | `compute_cmf` | Calculates the Chaikin Money Flow series over a period |
+| Generate Volume Signals | `generate_volume_signals` | Analyzes volume indicators and produces aggregate trend signals |
