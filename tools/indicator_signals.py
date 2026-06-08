@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 
 # ── RSI ──────────────────────────────────────────────────────────────────────
 
+
 def rsi_signal(rsi: Optional[float]) -> str:
     if rsi is None:
         return "N/A"
@@ -33,8 +34,8 @@ def macd_signal(macd: Optional[Dict[str, Any]]) -> str:
         return "🟢 Bullish Crossover"
     if "Bearish" in crossover:
         return "🔴 Bearish Crossover"
-    val  = macd.get("macd", 0) or 0
-    sig  = macd.get("signal", 0) or 0
+    val = macd.get("macd", 0) or 0
+    sig = macd.get("signal", 0) or 0
     if val > sig:
         return "🟡 Bullish (above signal)"
     if val < sig:
@@ -61,7 +62,7 @@ def bollinger_signal(bb: Optional[Dict[str, Any]], current_price: float) -> str:
         return "N/A"
     upper = bb.get("upper") or 0
     lower = bb.get("lower") or 0
-    mid   = bb.get("middle") or 0
+    mid = bb.get("middle") or 0
     if not upper or not lower:
         return "N/A"
     if current_price >= upper:
@@ -73,10 +74,27 @@ def bollinger_signal(bb: Optional[Dict[str, Any]], current_price: float) -> str:
     return "🟡 Below Middle Band"
 
 
+# ── Volume Trend ──────────────────────────────────────────────────────────────
+
+def volume_signal(vol_sig_str: Optional[str]) -> str:
+    if not vol_sig_str:
+        return "N/A"
+    if "Bullish" in vol_sig_str:
+        return "🟢 Bullish Trend"
+    if "Bearish" in vol_sig_str:
+        return "🔴 Bearish Trend"
+    return f"⚪ {vol_sig_str}"
+
+
 # ── Overall signal ────────────────────────────────────────────────────────────
 
-def overall_signal(rsi: Optional[float], macd: Optional[Dict], ma_str: Optional[str]) -> str:
-    """Simple vote-based overall signal from RSI, MACD, and MA cross."""
+def overall_signal(  # noqa: C901
+    rsi: Optional[float],
+    macd: Optional[Dict],
+    ma_str: Optional[str],
+    volume_str: Optional[str] = None,
+) -> str:
+    """Simple vote-based overall signal from RSI, MACD, MA cross, and volume trend."""
     bullish = 0
     bearish = 0
 
@@ -99,6 +117,12 @@ def overall_signal(rsi: Optional[float], macd: Optional[Dict], ma_str: Optional[
         elif "Death" in ma_str:
             bearish += 1
 
+    if volume_str:
+        if "Bullish" in volume_str:
+            bullish += 1
+        elif "Bearish" in volume_str:
+            bearish += 1
+
     if bullish >= 2:
         return "🟢 Bullish"
     if bearish >= 2:
@@ -115,6 +139,7 @@ def format_indicator_table(
     macd: Optional[Dict],
     ma_str: Optional[str],
     bb: Optional[Dict] = None,
+    volume_str: Optional[str] = None,
 ) -> str:
     """Render a Markdown indicator table for a single ticker."""
     rows = [
@@ -123,7 +148,8 @@ def format_indicator_table(
         ("MACD Signal",      macd_signal(macd)),
         ("MA Cross",         ma_signal(ma_str)),
         ("Bollinger Bands",  bollinger_signal(bb, current_price)),
-        ("Overall Signal",   overall_signal(rsi, macd, ma_str)),
+        ("Volume Trend",     volume_signal(volume_str)),
+        ("Overall Signal",   overall_signal(rsi, macd, ma_str, volume_str)),
     ]
     header = (
         f"### 📉 Technical Indicators — {ticker}\n\n"
@@ -145,7 +171,7 @@ def format_multi_indicator_table(entries: List[Dict[str, Any]]) -> str:
 
     tickers = [e.get("ticker", "—") for e in entries]
     header = "| Indicator | " + " | ".join(tickers) + " |\n"
-    sep    = "|-----------|" + "-----------|" * len(tickers)
+    sep = "|-----------|" + "-----------|" * len(tickers)
 
     def row(label: str, fn, *keys) -> str:
         vals = []
@@ -161,19 +187,21 @@ def format_multi_indicator_table(entries: List[Dict[str, Any]]) -> str:
         f"${e.get('current_price', 0):.2f}" for e in entries
     ) + " |"
 
-    rsi_row   = row("RSI Signal",   rsi_signal,      "rsi")
-    macd_row  = row("MACD",         macd_signal,     "macd")
-    ma_row    = row("MA Cross",     ma_signal,       "ma_signal")
-    over_row  = "| Overall | " + " | ".join(
-        overall_signal(e.get("rsi"), e.get("macd"), e.get("ma_signal"))
+    rsi_row = row("RSI Signal", rsi_signal, "rsi")
+    macd_row = row("MACD", macd_signal, "macd")
+    ma_row = row("MA Cross", ma_signal, "ma_signal")
+    vol_row = row("Volume Trend", volume_signal, "volume_signal")
+    over_row = "| Overall | " + " | ".join(
+        overall_signal(e.get("rsi"), e.get("macd"), e.get("ma_signal"), e.get("volume_signal"))
         for e in entries
     ) + " |"
 
     return (
         f"### 📉 Indicator Comparison\n\n"
         f"{header}{sep}\n"
-        f"{price_row}\n{rsi_row}\n{macd_row}\n{ma_row}\n{over_row}"
+        f"{price_row}\n{rsi_row}\n{macd_row}\n{ma_row}\n{vol_row}\n{over_row}"
     )
+
 
 # ── Public API ────────────────────────────────────────────────────────────────
 __all__ = [
@@ -181,6 +209,7 @@ __all__ = [
     "macd_signal",
     "ma_signal",
     "bollinger_signal",
+    "volume_signal",
     "overall_signal",
     "format_indicator_table",
     "format_multi_indicator_table",
