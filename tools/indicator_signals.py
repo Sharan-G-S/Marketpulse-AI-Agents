@@ -90,7 +90,7 @@ def volume_signal(vol_sig_str: Optional[str]) -> str:
 
 def overall_signal(  # noqa: C901
     rsi: Optional[float],
-    macd: Optional[Dict],
+    macd: Optional[Dict[str, Any]],
     ma_str: Optional[str],
     volume_str: Optional[str] = None,
 ) -> str:
@@ -136,9 +136,9 @@ def format_indicator_table(
     ticker: str,
     current_price: float,
     rsi: Optional[float],
-    macd: Optional[Dict],
+    macd: Optional[Dict[str, Any]],
     ma_str: Optional[str],
-    bb: Optional[Dict] = None,
+    bb: Optional[Dict[str, Any]] = None,
     volume_str: Optional[str] = None,
 ) -> str:
     """Render a Markdown indicator table for a single ticker."""
