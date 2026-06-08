@@ -368,3 +368,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - `tools/volume_indicators.py` — High-performance volume indicators module providing On-Balance Volume (OBV), Accumulation/Distribution Line (ADL), and Chaikin Money Flow (CMF) series and trend signal generation.
 - `tests/test_volume_indicators.py` — Comprehensive unit test suite with 14 tests verifying calculations, zero division handling, invalid data handling, and trend signal logic.
+- `tools/indicator_signals.py` — Integrated Volume Indicator composite trend signals into single-ticker reports, multi-ticker comparison tables, and overall vote signal calculation.
+- `tests/test_indicator_signals.py` — Added unit test coverage for volume signals integration, vote-based signal calculations, and tables formatting.
+
+### Refactored
+- `tools/indicator_signals.py` — Cleaned up type hints by using explicit `Dict[str, Any]` annotations instead of generic `Dict`.
