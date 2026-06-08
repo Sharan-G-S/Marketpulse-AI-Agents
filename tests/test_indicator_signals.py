@@ -18,11 +18,14 @@ _spec = importlib.util.spec_from_file_location(
 _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
 
-rsi_signal      = _mod.rsi_signal
-macd_signal     = _mod.macd_signal
-ma_signal       = _mod.ma_signal
+rsi_signal = _mod.rsi_signal
+macd_signal = _mod.macd_signal
+ma_signal = _mod.ma_signal
 bollinger_signal = _mod.bollinger_signal
-overall_signal  = _mod.overall_signal
+volume_signal = _mod.volume_signal
+overall_signal = _mod.overall_signal
+format_indicator_table = _mod.format_indicator_table
+format_multi_indicator_table = _mod.format_multi_indicator_table
 
 
 # ── rsi_signal ───────────────────────────────────────────────────────────────
@@ -128,3 +131,52 @@ class TestOverallSignal:
     def test_all_none_neutral(self):
         result = overall_signal(None, None, None)
         assert "Neutral" in result
+
+
+# ── volume_signal ─────────────────────────────────────────────────────────────
+
+class TestVolumeSignal:
+    def test_none_returns_na(self):
+        assert volume_signal(None) == "N/A"
+
+    def test_bullish_trend(self):
+        assert "Bullish" in volume_signal("Bullish Accumulation")
+
+    def test_bearish_trend(self):
+        assert "Bearish" in volume_signal("Bearish Distribution")
+
+    def test_other_returns_passthrough(self):
+        assert "Neutral" in volume_signal("Neutral")
+
+
+# ── overall_signal with volume ────────────────────────────────────────────────
+
+class TestOverallSignalWithVolume:
+    def test_bullish_with_volume(self):
+        result = overall_signal(30.0, None, None, "Bullish Accumulation")
+        assert "Bullish" in result
+
+    def test_bearish_with_volume(self):
+        result = overall_signal(70.0, None, None, "Bearish Distribution")
+        assert "Bearish" in result
+
+
+# ── tables formatting ─────────────────────────────────────────────────────────
+
+class TestFormatIndicatorTables:
+    def test_format_indicator_table(self):
+        report = format_indicator_table("AAPL", 150.0, 50.0, None, None, None, "Bullish Accumulation")
+        assert "Technical Indicators — AAPL" in report
+        assert "Volume Trend" in report
+        assert "Bullish Trend" in report
+
+    def test_format_multi_indicator_table(self):
+        entries = [
+            {"ticker": "AAPL", "current_price": 150.0, "rsi": 50.0, "volume_signal": "Bullish Accumulation"},
+            {"ticker": "MSFT", "current_price": 250.0, "rsi": 70.0, "volume_signal": "Bearish Distribution"},
+        ]
+        report = format_multi_indicator_table(entries)
+        assert "Indicator Comparison" in report
+        assert "Volume Trend" in report
+        assert "Bullish Trend" in report
+        assert "Bearish Trend" in report
