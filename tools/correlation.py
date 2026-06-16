@@ -125,11 +125,74 @@ def compute_rolling_correlation(
     return result
 
 
+# ── Display helpers ───────────────────────────────────────────────────────────
+
+
+def correlation_label(corr: Optional[float]) -> str:
+    """
+    Classify a Pearson correlation coefficient into a human-readable label.
+
+    Returns one of: 'Strong Positive', 'Moderate Positive',
+    'Weak / No Correlation', 'Moderate Negative', 'Strong Negative', or 'N/A'.
+    """
+    if corr is None:
+        return "N/A"
+    if corr >= 0.7:
+        return "Strong Positive"
+    if corr >= 0.4:
+        return "Moderate Positive"
+    if corr > -0.4:
+        return "Weak / No Correlation"
+    if corr > -0.7:
+        return "Moderate Negative"
+    return "Strong Negative"
+
+
+def format_correlation_report(
+    matrix: Dict[str, Dict[str, Optional[float]]],
+    title: str = "Correlation Matrix",
+) -> str:
+    """
+    Render a pairwise correlation matrix as a Markdown table.
+
+    Args:
+        matrix: Output of ``compute_correlation_matrix()``.
+        title:  Report heading.
+
+    Returns:
+        Markdown-formatted string with the correlation table.
+    """
+    tickers = list(matrix.keys())
+    if not tickers:
+        return "_No correlation data available._"
+
+    header = "| Ticker | " + " | ".join(tickers) + " |"
+    sep = "|--------|" + "---------|" * len(tickers)
+    rows = [header, sep]
+
+    for a in tickers:
+        cells = []
+        for b in tickers:
+            val = matrix[a].get(b)
+            if val is None:
+                cells.append("N/A")
+            elif a == b:
+                cells.append("1.00")
+            else:
+                emoji = "🟢" if val >= 0.4 else ("🔴" if val <= -0.4 else "⚪")
+                cells.append(f"{emoji} {val:.2f}")
+        rows.append("| " + a + " | " + " | ".join(cells) + " |")
+
+    return f"### 📊 {title}\n\n" + "\n".join(rows)
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
 __all__ = [
     "compute_correlation_matrix",
     "compute_rolling_correlation",
+    "correlation_label",
+    "format_correlation_report",
 ]
 
 _MODULE = "tools/correlation"
