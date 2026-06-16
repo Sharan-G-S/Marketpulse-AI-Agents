@@ -227,12 +227,72 @@ def signal_confidence_label(strength: float) -> str:
     return "No Signal"
 
 
+# ── Markdown report ───────────────────────────────────────────────────────────
+
+
+def format_trade_signals_report(
+    ticker: str,
+    aggregated: Dict[str, Any],
+) -> str:
+    """
+    Render a Markdown trade signal summary for one ticker.
+
+    Args:
+        ticker:     Ticker symbol.
+        aggregated: Output of ``aggregate_signals()``.
+
+    Returns:
+        Markdown-formatted string with direction, strength, confidence,
+        and per-indicator vote breakdown.
+    """
+    direction = aggregated.get("direction", "N/A")
+    raw_score = aggregated.get("raw_score", 0.0)
+    votes = aggregated.get("votes", {})
+    signals_used = aggregated.get("signals_used", [])
+
+    strength = signal_strength_score(aggregated)
+    confidence = signal_confidence_label(strength)
+
+    dir_emoji = "🟢" if direction == "Bullish" else ("🔴" if direction == "Bearish" else "⚪")
+    strength_bar = "█" * int(strength * 10) + "░" * (10 - int(strength * 10))
+
+    lines = [
+        f"### 📈 Trade Signals — {ticker}",
+        "",
+        f"**Direction:** {dir_emoji} {direction}  |  **Confidence:** {confidence}",
+        f"**Strength:** [{strength_bar}] {strength:.0%}  "
+        f"|  **Score:** {raw_score:+.2f}",
+        "",
+        f"**Indicators Used:** {len(signals_used)} / {len(_WEIGHTS)}",
+        "",
+        "| Indicator | Vote |",
+        "|-----------|------|",
+    ]
+
+    indicator_labels = {
+        "rsi": "RSI",
+        "macd": "MACD",
+        "ma": "MA Crossover",
+        "bb": "Bollinger Bands",
+        "volume": "Volume",
+        "stoch": "Stochastic",
+    }
+
+    for key, label in indicator_labels.items():
+        vote = votes.get(key, "—")
+        vote_emoji = "🟢" if "Bullish" in vote else ("🔴" if "Bearish" in vote else "⚪")
+        lines.append(f"| {label} | {vote_emoji} {vote} |")
+
+    return "\n".join(lines)
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
 __all__ = [
     "aggregate_signals",
     "signal_strength_score",
     "signal_confidence_label",
+    "format_trade_signals_report",
 ]
 
 _MODULE = "tools/trade_signals"
