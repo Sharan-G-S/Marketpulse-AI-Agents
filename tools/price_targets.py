@@ -154,11 +154,78 @@ def compute_price_target(
         }
 
 
+# ── Markdown Report ───────────────────────────────────────────────────────────
+
+
+def format_price_target_report(
+    ticker: str,
+    price_target: Dict[str, Any],
+    support_resistance: Dict[str, Any],
+) -> str:
+    """
+    Render a Markdown price target and support/resistance report for one ticker.
+
+    Args:
+        ticker:             Ticker symbol.
+        price_target:       Output of ``compute_price_target()``.
+        support_resistance: Output of ``compute_support_resistance()``.
+
+    Returns:
+        Markdown-formatted string with price targets and S/R levels.
+    """
+    bias = price_target.get("bias", "N/A")
+    bias_emoji = "🟢" if bias == "Bullish" else ("🔴" if bias == "Bearish" else "⚪")
+    cp = price_target.get("current_price")
+    cp_str = f"${cp:.2f}" if cp is not None else "N/A"
+    atr = price_target.get("atr")
+    atr_str = f"${atr:.4f}" if atr is not None else "N/A"
+    bull = price_target.get("bull_target")
+    bear = price_target.get("bear_target")
+    bull_str = f"${bull:.2f}" if bull is not None else "N/A"
+    bear_str = f"${bear:.2f}" if bear is not None else "N/A"
+    rng = price_target.get("target_range_pct")
+    rng_str = f"{rng:.2f}%" if rng is not None else "N/A"
+
+    pivot = support_resistance.get("pivot")
+    r1 = support_resistance.get("r1")
+    r2 = support_resistance.get("r2")
+    s1 = support_resistance.get("s1")
+    s2 = support_resistance.get("s2")
+
+    def _fmt(v: Optional[float]) -> str:
+        return f"${v:.2f}" if v is not None else "N/A"
+
+    lines = [
+        f"### 🎯 Price Targets — {ticker}",
+        "",
+        f"**Bias:** {bias_emoji} {bias}  |  **Current Price:** {cp_str}",
+        f"**ATR:** {atr_str}  |  **Target Range:** {rng_str}",
+        "",
+        "| Level | Price |",
+        "|-------|-------|",
+        f"| 🟢 Bull Target (R) | {bull_str} |",
+        f"| 🔵 Pivot | {_fmt(pivot)} |",
+        f"| 🔴 Bear Target (S) | {bear_str} |",
+        "",
+        "#### Support & Resistance Levels",
+        "",
+        "| Level | Price |",
+        "|-------|-------|",
+        f"| R2 (Strong Resistance) | {_fmt(r2)} |",
+        f"| R1 (Resistance) | {_fmt(r1)} |",
+        f"| Pivot | {_fmt(pivot)} |",
+        f"| S1 (Support) | {_fmt(s1)} |",
+        f"| S2 (Strong Support) | {_fmt(s2)} |",
+    ]
+    return "\n".join(lines)
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
 __all__ = [
     "compute_support_resistance",
     "compute_price_target",
+    "format_price_target_report",
 ]
 
 _MODULE = "tools/price_targets"
