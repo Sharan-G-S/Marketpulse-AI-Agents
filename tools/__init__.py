@@ -48,9 +48,20 @@ __all__ = [
     "compute_adl",
     "compute_cmf",
     "generate_volume_signals",
+    # correlation
+    "compute_correlation_matrix",
+    "compute_rolling_correlation",
+    "correlation_label",
+    "format_correlation_report",
 ]
 
 from .backtest_simulator import format_backtest_report, run_crossover_backtest
+from .correlation import (
+    compute_correlation_matrix,
+    compute_rolling_correlation,
+    correlation_label,
+    format_correlation_report,
+)
 from .momentum import compute_cci, compute_roc, compute_williams_r, get_momentum_summary
 from .portfolio_rebalancer import compute_portfolio_rebalancing, format_rebalance_report
 from .portfolio_summary import compute_portfolio_summary, format_portfolio_summary
