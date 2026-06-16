@@ -63,10 +63,102 @@ def compute_support_resistance(
         return {"pivot": None, "r1": None, "r2": None, "s1": None, "s2": None}
 
 
+# ── ATR-based Price Targets ───────────────────────────────────────────────────
+
+
+def compute_price_target(
+    price_history: List[Dict[str, Any]],
+    atr_multiplier: float = 1.5,
+) -> Dict[str, Any]:
+    """
+    Compute ATR-based bullish, bearish, and neutral price targets.
+
+    Uses the Average True Range (ATR) over the last min(14, n) bars to
+    project upside and downside price targets from the most recent close.
+
+        Bull target  = last_close + atr_multiplier × ATR
+        Bear target  = last_close − atr_multiplier × ATR
+        Neutral zone = [Bear target, Bull target]
+
+    Args:
+        price_history:   OHLCV list sorted oldest-first.
+        atr_multiplier:  Scaling factor applied to ATR (default 1.5).
+
+    Returns:
+        Dict with keys: current_price, atr, bull_target, bear_target,
+        target_range_pct, and bias (str).
+    """
+    if len(price_history) < 2:
+        return {
+            "current_price": None,
+            "atr": None,
+            "bull_target": None,
+            "bear_target": None,
+            "target_range_pct": None,
+            "bias": "Insufficient Data",
+        }
+
+    try:
+        period = min(14, len(price_history) - 1)
+        recent = price_history[-(period + 1):]
+
+        true_ranges: List[float] = []
+        for i in range(1, len(recent)):
+            high = recent[i].get("high") or recent[i].get("close", 0)
+            low = recent[i].get("low") or recent[i].get("close", 0)
+            prev_close = recent[i - 1].get("close", 0)
+            tr = max(
+                abs(high - low),
+                abs(high - prev_close),
+                abs(low - prev_close),
+            )
+            true_ranges.append(tr)
+
+        if not true_ranges:
+            atr = 0.0
+        else:
+            atr = round(sum(true_ranges) / len(true_ranges), 4)
+
+        current_price = price_history[-1].get("close", 0)
+        if not current_price:
+            raise ValueError("Zero or missing close price")
+
+        bull_target = round(current_price + atr_multiplier * atr, 4)
+        bear_target = round(current_price - atr_multiplier * atr, 4)
+        target_range_pct = round(
+            (bull_target - bear_target) / current_price * 100, 2
+        ) if current_price else None
+
+        # Simple bias from recent price trend
+        first_close = price_history[0].get("close", current_price)
+        bias = "Bullish" if current_price > first_close else (
+            "Bearish" if current_price < first_close else "Neutral"
+        )
+
+        return {
+            "current_price": current_price,
+            "atr": atr,
+            "bull_target": bull_target,
+            "bear_target": bear_target,
+            "target_range_pct": target_range_pct,
+            "bias": bias,
+        }
+    except (TypeError, ValueError, KeyError):
+        return {
+            "current_price": None,
+            "atr": None,
+            "bull_target": None,
+            "bear_target": None,
+            "target_range_pct": None,
+            "bias": "Error",
+        }
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
 __all__ = [
     "compute_support_resistance",
+    "compute_price_target",
 ]
 
 _MODULE = "tools/price_targets"
