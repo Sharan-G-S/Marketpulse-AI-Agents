@@ -174,10 +174,65 @@ def aggregate_signals(  # noqa: C901
     }
 
 
+# ── Strength & Confidence helpers ─────────────────────────────────────────────
+
+
+def signal_strength_score(aggregated: Dict[str, Any]) -> float:
+    """
+    Convert an aggregated signal dict into a normalised strength score [0, 1].
+
+    The score represents how "decisive" the signal is regardless of direction:
+        1.0 = maximum conviction (all indicators agree on one side)
+        0.0 = perfectly balanced / no signal
+
+    Formula:
+        raw_score is already in [-(sum of weights), +(sum of weights)].
+        We normalise by the maximum possible absolute score (sum of all weights).
+
+    Args:
+        aggregated: Output of ``aggregate_signals()``.
+
+    Returns:
+        Float in [0, 1] representing signal strength.
+    """
+    raw = abs(aggregated.get("raw_score", 0.0))
+    max_possible = sum(_WEIGHTS.values())
+    if max_possible == 0:
+        return 0.0
+    return round(min(raw / max_possible, 1.0), 4)
+
+
+def signal_confidence_label(strength: float) -> str:
+    """
+    Classify a normalised signal strength score into a textual confidence label.
+
+    Thresholds:
+        strength >= 0.75 → 'High Conviction'
+        strength >= 0.45 → 'Moderate Conviction'
+        strength >= 0.20 → 'Low Conviction'
+        otherwise        → 'No Signal'
+
+    Args:
+        strength: Float in [0, 1] from ``signal_strength_score()``.
+
+    Returns:
+        One of: 'High Conviction', 'Moderate Conviction', 'Low Conviction', 'No Signal'.
+    """
+    if strength >= 0.75:
+        return "High Conviction"
+    if strength >= 0.45:
+        return "Moderate Conviction"
+    if strength >= 0.20:
+        return "Low Conviction"
+    return "No Signal"
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
 __all__ = [
     "aggregate_signals",
+    "signal_strength_score",
+    "signal_confidence_label",
 ]
 
 _MODULE = "tools/trade_signals"
