@@ -133,9 +133,81 @@ def compute_position_health_score(
     }
 
 
+# ── Concentration risk ────────────────────────────────────────────────────────
+
+
+def compute_portfolio_concentration_risk(
+    position_weights: list,
+) -> dict:
+    """
+    Measure single-position concentration risk using the Herfindahl-Hirschman
+    Index (HHI).
+
+    HHI = sum(w_i ^ 2) for all position weights w_i in [0, 1].
+
+    Interpretation:
+        HHI < 0.15  → Well diversified  (score 100)
+        HHI < 0.25  → Acceptable        (score 60-99)
+        HHI < 0.40  → Concentrated      (score 20-59)
+        HHI >= 0.40 → Highly concentrated (score 0-19)
+
+    Args:
+        position_weights: List of decimal weight fractions, e.g. [0.20, 0.30, 0.50].
+                          Weights do not need to sum to exactly 1.0 — they are
+                          normalised internally.
+
+    Returns:
+        Dict with keys: ``hhi``, ``concentration_score`` (0-100),
+        ``risk_level``, ``n_positions``.
+    """
+    weights = [w for w in position_weights if w > 0]
+    n = len(weights)
+    if n == 0:
+        return {
+            "hhi": None,
+            "concentration_score": 0.0,
+            "risk_level": "Error",
+            "n_positions": 0,
+        }
+
+    total = sum(weights)
+    norm = [_safe_div(w, total) for w in weights]
+    hhi = round(sum(w ** 2 for w in norm), 6)
+
+    # Map HHI to a 0-100 score (lower HHI = better = higher score)
+    if hhi < 0.15:
+        concentration_score = 100.0
+        risk_level = "Low"
+    elif hhi < 0.25:
+        # linear: 0.15 → 100, 0.25 → 60
+        t = _safe_div(hhi - 0.15, 0.10)
+        concentration_score = 100.0 - t * 40.0
+        risk_level = "Moderate"
+    elif hhi < 0.40:
+        # linear: 0.25 → 60, 0.40 → 20
+        t = _safe_div(hhi - 0.25, 0.15)
+        concentration_score = 60.0 - t * 40.0
+        risk_level = "High"
+    else:
+        # linear: 0.40 → 20, 1.0 → 0
+        t = _safe_div(hhi - 0.40, 0.60)
+        concentration_score = _clamp(20.0 - t * 20.0)
+        risk_level = "Very High"
+
+    return {
+        "hhi": hhi,
+        "concentration_score": round(concentration_score, 2),
+        "risk_level": risk_level,
+        "n_positions": n,
+    }
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
-__all__ = ["compute_position_health_score"]
+__all__ = [
+    "compute_position_health_score",
+    "compute_portfolio_concentration_risk",
+]
 
 _MODULE = "tools/portfolio_health"
 _VERSION = "2.2.0"
