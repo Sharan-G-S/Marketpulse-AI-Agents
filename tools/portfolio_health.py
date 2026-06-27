@@ -277,10 +277,48 @@ def compute_diversification_health(
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
+# ── Grade classifier ─────────────────────────────────────────────────────────
+
+
+def health_grade(score: float) -> str:
+    """
+    Convert a numeric health score (0-100) into a letter grade.
+
+    Grade bands:
+        A+ : 95 – 100  (Exceptional)
+        A  : 85 – 94   (Excellent)
+        B  : 70 – 84   (Good)
+        C  : 55 – 69   (Neutral / Watch)
+        D  : 35 – 54   (Poor)
+        F  :  0 – 34   (Critical)
+
+    Args:
+        score: Numeric score in [0, 100].
+
+    Returns:
+        Letter grade string: 'A+', 'A', 'B', 'C', 'D', or 'F'.
+    """
+    s = _clamp(score)
+    if s >= 95:
+        return "A+"
+    if s >= 85:
+        return "A"
+    if s >= 70:
+        return "B"
+    if s >= 55:
+        return "C"
+    if s >= 35:
+        return "D"
+    return "F"
+
+
+# ── Public API ────────────────────────────────────────────────────────────────
+
 __all__ = [
     "compute_position_health_score",
     "compute_portfolio_concentration_risk",
     "compute_diversification_health",
+    "health_grade",
 ]
 
 _MODULE = "tools/portfolio_health"
