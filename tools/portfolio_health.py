@@ -401,6 +401,82 @@ def compute_overall_portfolio_health(
     }
 
 
+# ── Markdown report ───────────────────────────────────────────────────────────
+
+
+def format_health_report(health: dict, portfolio_name: str = "Portfolio") -> str:
+    """
+    Render a full portfolio health report as a Markdown string.
+
+    Args:
+        health:         Output of ``compute_overall_portfolio_health()``.
+        portfolio_name: Display name for the report heading.
+
+    Returns:
+        Multi-section Markdown string with overall score, grade, concentration
+        risk, diversification, and a per-position breakdown table.
+    """
+    score = health.get("overall_score", 0.0)
+    grade = health.get("grade", "F")
+    pos_avg = health.get("position_avg_score", 0.0)
+    concentration = health.get("concentration", {})
+    diversification = health.get("diversification", {})
+    position_scores = health.get("position_scores", [])
+
+    grade_emoji = {
+        "A+": "🌟", "A": "🟢", "B": "🔵", "C": "🟡", "D": "🟠", "F": "🔴"
+    }.get(grade, "⚪")
+
+    bar_filled = int(score / 10)
+    score_bar = "█" * bar_filled + "░" * (10 - bar_filled)
+
+    lines = [
+        f"## 🏥 {portfolio_name} — Health Report",
+        "",
+        f"**Overall Score:** {score:.1f}/100  [{score_bar}]",
+        f"**Grade:** {grade_emoji} {grade}  |  **Avg Position Score:** {pos_avg:.1f}",
+        "",
+        "---",
+        "",
+        "### 🎯 Concentration Risk",
+        f"- **HHI:** {concentration.get('hhi', 'N/A')}",
+        f"- **Risk Level:** {concentration.get('risk_level', 'N/A')}",
+        f"- **Concentration Score:** {concentration.get('concentration_score', 0):.1f}/100",
+        f"- **Positions:** {concentration.get('n_positions', 0)}",
+        "",
+        "### 🌐 Diversification Health",
+        f"- **Assessment:** {diversification.get('assessment', 'N/A')}",
+        f"- **Diversification Score:** {diversification.get('diversification_score', 0):.1f}/100",
+        f"- **Sectors:** {diversification.get('n_sectors', 0)}",
+    ]
+
+    breached = diversification.get("breached_sectors", [])
+    if breached:
+        lines.append(f"- **Over-weight Sectors:** {', '.join(breached)}")
+
+    lines += [
+        "",
+        "### 📊 Position Breakdown",
+        "",
+        "| Ticker | Return % | Score | Grade | Status |",
+        "|--------|----------|-------|-------|--------|",
+    ]
+
+    for ps in position_scores:
+        ticker = ps.get("ticker", "?")
+        ret = ps.get("return_pct")
+        ret_str = f"{ret:+.2f}%" if ret is not None else "N/A"
+        ts = ps.get("total_score", 0.0)
+        g = health_grade(ts)
+        status = ps.get("status", "N/A")
+        g_emoji = {
+            "A+": "🌟", "A": "🟢", "B": "🔵", "C": "🟡", "D": "🟠", "F": "🔴"
+        }.get(g, "⚪")
+        lines.append(f"| {ticker} | {ret_str} | {ts:.1f} | {g_emoji} {g} | {status} |")
+
+    return "\n".join(lines)
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
 __all__ = [
@@ -409,6 +485,7 @@ __all__ = [
     "compute_diversification_health",
     "health_grade",
     "compute_overall_portfolio_health",
+    "format_health_report",
 ]
 
 _MODULE = "tools/portfolio_health"
