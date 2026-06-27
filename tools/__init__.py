@@ -53,6 +53,13 @@ __all__ = [
     "compute_rolling_correlation",
     "correlation_label",
     "format_correlation_report",
+    # portfolio health
+    "compute_position_health_score",
+    "compute_portfolio_concentration_risk",
+    "compute_diversification_health",
+    "health_grade",
+    "compute_overall_portfolio_health",
+    "format_health_report",
 ]
 
 from .backtest_simulator import format_backtest_report, run_crossover_backtest
@@ -63,6 +70,14 @@ from .correlation import (
     format_correlation_report,
 )
 from .momentum import compute_cci, compute_roc, compute_williams_r, get_momentum_summary
+from .portfolio_health import (
+    compute_diversification_health,
+    compute_overall_portfolio_health,
+    compute_portfolio_concentration_risk,
+    compute_position_health_score,
+    format_health_report,
+    health_grade,
+)
 from .portfolio_rebalancer import compute_portfolio_rebalancing, format_rebalance_report
 from .portfolio_summary import compute_portfolio_summary, format_portfolio_summary
 from .volume_indicators import compute_adl, compute_cmf, compute_obv, generate_volume_signals
