@@ -312,6 +312,95 @@ def health_grade(score: float) -> str:
     return "F"
 
 
+# ── Overall portfolio health ──────────────────────────────────────────────────
+
+
+def compute_overall_portfolio_health(
+    positions: list,
+    sector_weights: dict,
+    snapshots: dict,
+) -> dict:
+    """
+    Compute a composite portfolio health score from all sub-dimensions.
+
+    The composite is a weighted average of:
+        - Average position health score  (weight: 40 %)
+        - Concentration score            (weight: 30 %)
+        - Diversification score          (weight: 30 %)
+
+    Args:
+        positions:      List of position dicts, each containing:
+                        ``ticker`` (str), ``qty`` (float), ``avg_cost`` (float).
+        sector_weights: Dict mapping sector name → decimal weight fraction.
+        snapshots:      Dict mapping ticker → current market price (float).
+
+    Returns:
+        Dict with keys: ``overall_score``, ``grade``, ``position_avg_score``,
+        ``concentration``, ``diversification``, ``position_scores`` (list).
+    """
+    if not positions or not snapshots:
+        return {
+            "overall_score": 0.0,
+            "grade": "F",
+            "position_avg_score": 0.0,
+            "concentration": {},
+            "diversification": {},
+            "position_scores": [],
+        }
+
+    # Compute each position weight by market value
+    mv_map = {}
+    for pos in positions:
+        ticker = pos.get("ticker", "")
+        qty = pos.get("qty", 0.0)
+        price = snapshots.get(ticker, 0.0)
+        mv_map[ticker] = qty * price
+
+    total_mv = sum(mv_map.values())
+
+    # Score individual positions
+    position_scores = []
+    for pos in positions:
+        ticker = pos.get("ticker", "")
+        avg_cost = pos.get("avg_cost", 0.0)
+        current_price = snapshots.get(ticker, 0.0)
+        weight = _safe_div(mv_map.get(ticker, 0.0), total_mv)
+        phs = compute_position_health_score(avg_cost, current_price, weight)
+        position_scores.append({
+            "ticker": ticker,
+            **phs,
+        })
+
+    avg_position_score = _safe_div(
+        sum(p["total_score"] for p in position_scores),
+        len(position_scores),
+    )
+
+    # Concentration risk
+    weights_list = [_safe_div(mv_map.get(p.get("ticker", ""), 0.0), total_mv)
+                    for p in positions]
+    concentration = compute_portfolio_concentration_risk(weights_list)
+
+    # Diversification health
+    diversification = compute_diversification_health(sector_weights)
+
+    # Composite score
+    overall_score = _clamp(
+        avg_position_score * _WEIGHT_POSITION
+        + concentration["concentration_score"] * _WEIGHT_CONCENTRATION
+        + diversification["diversification_score"] * _WEIGHT_DIVERSIFICATION
+    )
+
+    return {
+        "overall_score": round(overall_score, 2),
+        "grade": health_grade(overall_score),
+        "position_avg_score": round(avg_position_score, 2),
+        "concentration": concentration,
+        "diversification": diversification,
+        "position_scores": position_scores,
+    }
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
 __all__ = [
@@ -319,6 +408,7 @@ __all__ = [
     "compute_portfolio_concentration_risk",
     "compute_diversification_health",
     "health_grade",
+    "compute_overall_portfolio_health",
 ]
 
 _MODULE = "tools/portfolio_health"
