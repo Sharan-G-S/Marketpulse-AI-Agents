@@ -202,11 +202,85 @@ def compute_portfolio_concentration_risk(
     }
 
 
+# ── Diversification health ────────────────────────────────────────────────────
+
+
+def compute_diversification_health(
+    sector_weights: dict,
+    target_max_sector: float = 0.30,
+) -> dict:
+    """
+    Score how well the portfolio is spread across sectors.
+
+    A sector that exceeds *target_max_sector* weight is considered
+    over-concentrated.  The score penalises both over-concentrated sectors
+    and portfolios with fewer than 3 distinct sectors.
+
+    Scoring logic:
+        - Start at 100 points.
+        - Deduct 15 pts for each sector exceeding the target cap.
+        - Deduct 20 pts if fewer than 3 sectors are represented.
+        - Deduct 10 pts if fewer than 5 sectors are represented (stacks).
+
+    Args:
+        sector_weights:      Dict mapping sector name → decimal weight fraction,
+                             e.g. ``{"Tech": 0.40, "Finance": 0.35, "Energy": 0.25}``.
+        target_max_sector:   Maximum acceptable weight for any single sector.
+                             Defaults to 0.30 (30 %).
+
+    Returns:
+        Dict with keys: ``diversification_score`` (0-100), ``n_sectors``,
+        ``breached_sectors`` (list), ``assessment``.
+    """
+    if not sector_weights:
+        return {
+            "diversification_score": 0.0,
+            "n_sectors": 0,
+            "breached_sectors": [],
+            "assessment": "No sector data",
+        }
+
+    total = sum(v for v in sector_weights.values() if v > 0)
+    norm = {
+        s: _safe_div(w, total)
+        for s, w in sector_weights.items()
+        if w > 0
+    }
+    n_sectors = len(norm)
+    breached = [s for s, w in norm.items() if w > target_max_sector]
+
+    score = 100.0
+    score -= len(breached) * 15.0
+    if n_sectors < 3:
+        score -= 20.0
+    if n_sectors < 5:
+        score -= 10.0
+
+    score = _clamp(score)
+
+    if score >= 80:
+        assessment = "Well Diversified"
+    elif score >= 55:
+        assessment = "Adequately Diversified"
+    elif score >= 30:
+        assessment = "Needs Improvement"
+    else:
+        assessment = "Poorly Diversified"
+
+    return {
+        "diversification_score": round(score, 2),
+        "n_sectors": n_sectors,
+        "breached_sectors": breached,
+        "assessment": assessment,
+    }
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
 __all__ = [
     "compute_position_health_score",
     "compute_portfolio_concentration_risk",
+    "compute_diversification_health",
 ]
 
 _MODULE = "tools/portfolio_health"
