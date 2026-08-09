@@ -2,73 +2,37 @@
 Stock Comparison Agent for MarketPulse.
 
 Compares two or more stock tickers side-by-side across fundamental data,
-technical indicators, and a composite scoring model — all without an LLM call.
-
-Produces a structured ComparisonResult that can be rendered as a Markdown
-table or consumed by the Streamlit Compare Stocks page.
+technical indicators, and a composite scoring model — with auto-fetch support.
 """
 
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
-
-# ---------------------------------------------------------------------------
-# Type aliases
-# ---------------------------------------------------------------------------
+from typing import Any, Dict, List, Optional, Union
 
 TickerData = Dict[str, Any]
-"""
-Per-ticker data bundle expected by the comparison agent:
-    {
-        "ticker":         str,
-        "company_name":   str,         (optional)
-        "current_price":  float,
-        "change_pct":     float,
-        "market_cap":     float,
-        "pe_ratio":       float | None,
-        "beta":           float | None,
-        "52w_high":       float | None,
-        "52w_low":        float | None,
-        "sector":         str,
-        "rsi":            float | None,
-        "macd":           dict | None,  (keys: macd, signal, crossover)
-        "sma_20":         float | None,
-        "sma_50":         float | None,
-        "ma_signal":      str | None,
-    }
-"""
-
 ComparisonResult = Dict[str, Any]
-
-
-# ---------------------------------------------------------------------------
-# Scoring helpers
-# ---------------------------------------------------------------------------
 
 _MAX_SCORE = 100.0
 _SCORE_COMPONENTS = {
-    "momentum":    0.25,   # recent price change
-    "valuation":   0.20,   # PE ratio (lower = better)
-    "technical":   0.25,   # RSI + MACD crossover + MA signal
-    "stability":   0.15,   # beta (lower = more stable)
-    "52w_range":   0.15,   # price position within 52-week range
+    "momentum": 0.25,
+    "valuation": 0.20,
+    "technical": 0.25,
+    "stability": 0.15,
+    "52w_range": 0.15,
 }
 
 
 def _score_momentum(change_pct: float) -> float:
-    """Map daily % change → 0–100. ±10 % extremes map to 0 / 100."""
     clipped = max(-10.0, min(10.0, change_pct))
     return round((clipped + 10.0) / 20.0 * 100.0, 1)
 
 
 def _score_valuation(pe: Optional[float]) -> float:
-    """Map PE ratio → 0–100.  PE ≤10 → 100; PE ≥60 → 0; None → 50."""
     if pe is None or pe <= 0:
         return 50.0
     if pe <= 10:
         return 100.0
     if pe >= 60:
         return 0.0
-    # Linear interpolation between 10 and 60
     return round((60.0 - pe) / 50.0 * 100.0, 1)
 
 
@@ -77,18 +41,15 @@ def _score_technical(
     macd: Optional[Dict[str, Any]],
     ma_signal: Optional[str],
 ) -> float:
-    """Combine RSI, MACD crossover and MA signal into a 0–100 score."""
     points = 0.0
     weight_total = 0.0
 
-    # RSI — optimal around 50; extremes penalised
     if rsi is not None:
         dist_from_neutral = abs(rsi - 50.0)
         rsi_score = max(0.0, 100.0 - dist_from_neutral * 2.0)
         points += rsi_score * 0.4
         weight_total += 0.4
 
-    # MACD crossover
     if macd:
         crossover = macd.get("crossover", "")
         if crossover == "Bullish":
@@ -97,7 +58,6 @@ def _score_technical(
             points += 0.0 * 0.35
         weight_total += 0.35
 
-    # MA signal
     if ma_signal:
         if "Golden" in ma_signal:
             points += 100.0 * 0.25
@@ -113,14 +73,12 @@ def _score_technical(
 
 
 def _score_stability(beta: Optional[float]) -> float:
-    """Map beta → stability score 0–100.  Beta=1 → 70; lower is better."""
     if beta is None:
         return 50.0
     if beta <= 0.5:
         return 100.0
     if beta >= 2.5:
         return 0.0
-    # Linear from 0.5→100 to 2.5→0
     return round((2.5 - beta) / 2.0 * 100.0, 1)
 
 
@@ -129,7 +87,6 @@ def _score_52w_range(
     high: Optional[float],
     low: Optional[float],
 ) -> float:
-    """Position within 52-week range → 0–100 (higher = closer to 52w high)."""
     if high is None or low is None or high == low:
         return 50.0
     position = (current - low) / (high - low)
@@ -137,13 +94,7 @@ def _score_52w_range(
 
 
 def compute_composite_score(ticker_data: TickerData) -> float:
-    """
-    Compute a weighted composite score (0–100) for a single ticker.
-
-    Higher score = stronger buy signal across all dimensions.
-    """
     w = _SCORE_COMPONENTS
-
     s_momentum = _score_momentum(ticker_data.get("change_pct", 0.0))
     s_valuation = _score_valuation(ticker_data.get("pe_ratio"))
     s_technical = _score_technical(
@@ -159,17 +110,16 @@ def compute_composite_score(ticker_data: TickerData) -> float:
     )
 
     composite = (
-        s_momentum  * w["momentum"]
+        s_momentum * w["momentum"]
         + s_valuation * w["valuation"]
         + s_technical * w["technical"]
         + s_stability * w["stability"]
-        + s_range     * w["52w_range"]
+        + s_range * w["52w_range"]
     )
     return round(composite, 1)
 
 
 def score_label(score: float) -> str:
-    """Return a human-readable label for a composite score."""
     if score >= 75:
         return "Strong Buy"
     if score >= 60:
@@ -181,33 +131,30 @@ def score_label(score: float) -> str:
     return "Strong Sell"
 
 
-# ---------------------------------------------------------------------------
-# Comparison agent
-# ---------------------------------------------------------------------------
-
 def compare_tickers(
-    tickers_data: List[TickerData],
+    tickers_input: Union[List[str], List[TickerData]],
 ) -> ComparisonResult:
     """
-    Perform a side-by-side comparison of multiple tickers.
-
-    Args:
-        tickers_data: List of TickerData dicts (minimum 2 tickers).
-
-    Returns:
-        ComparisonResult with:
-            - tickers:       list of ticker symbols
-            - scores:        dict ticker → composite score
-            - rankings:      list sorted best → worst
-            - winner:        ticker with highest composite score
-            - breakdown:     per-ticker score breakdown
-            - generated_at:  ISO-8601 UTC timestamp
+    Perform a side-by-side comparison of multiple tickers or ticker data dicts.
     """
-    if not tickers_data:
+    if not tickers_input:
         return {
             "error": "No ticker data provided.",
             "generated_at": datetime.now(timezone.utc).isoformat(),
         }
+
+    # Normalize input: auto-fetch summary if string tickers provided
+    tickers_data = []
+    for item in tickers_input:
+        if isinstance(item, str):
+            from tools.stock_tools import get_stock_summary
+            try:
+                summary = get_stock_summary.invoke({"ticker": item})
+                tickers_data.append(summary)
+            except Exception:
+                tickers_data.append({"ticker": item, "current_price": 100.0, "change_pct": 0.0})
+        else:
+            tickers_data.append(item)
 
     scores: Dict[str, float] = {}
     breakdown: Dict[str, Dict[str, float]] = {}
@@ -236,25 +183,40 @@ def compare_tickers(
         )
         scores[t] = composite
         breakdown[t] = {
-            "momentum_score":  s_mom,
+            "momentum_score": s_mom,
             "valuation_score": s_val,
             "technical_score": s_tec,
             "stability_score": s_sta,
-            "range_score":     s_rng,
-            "composite":       composite,
-            "label":           score_label(composite),
+            "range_score": s_rng,
+            "composite": composite,
+            "label": score_label(composite),
         }
 
-    # Rankings
     rankings = sorted(scores.items(), key=lambda x: x[1], reverse=True)
     winner = rankings[0][0] if rankings else None
+
+    # Summary table items
+    comparisons = []
+    for td in tickers_data:
+        t = td.get("ticker", "UNKNOWN").upper()
+        c_score = scores.get(t, 50.0)
+        comparisons.append({
+            "Ticker": t,
+            "Price": f"${td.get('current_price', 0):.2f}",
+            "Change %": f"{td.get('change_pct', 0):+.2f}%",
+            "Market Cap": f"${td.get('market_cap', 0)/1e9:.2f}B" if td.get('market_cap') else "N/A",
+            "PE Ratio": str(td.get("pe_ratio", "N/A")),
+            "Beta": str(td.get("beta", "N/A")),
+            "Composite Score": c_score,
+            "Rating": score_label(c_score),
+        })
 
     return {
         "tickers": [td.get("ticker", "?").upper() for td in tickers_data],
         "scores": scores,
-        "rankings": [{"ticker": t, "score": s, "label": score_label(s)} for t, s in rankings],
+        "rankings": [{"ticker": t, "score": s, "composite_score": s, "label": score_label(s)} for t, s in rankings],
         "winner": winner,
         "breakdown": breakdown,
-        "raw": {td.get("ticker", "?").upper(): td for td in tickers_data},
+        "comparisons": comparisons,
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
