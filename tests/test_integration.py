@@ -5,7 +5,6 @@ These tests run real agent nodes (without LLM calls where possible).
 
 import os
 import sys
-
 import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -22,11 +21,10 @@ class TestWorkflowGraph:
         """Check that all expected agent nodes are registered."""
         from graph.workflow import build_graph
         g = build_graph()
-        # LangGraph compiled graph should have graph structure
         assert g is not None
 
     def test_news_then_stock_pipeline(self, base_state):
-        """Run news agent → stock agent in sequence."""
+        """Run news agent -> stock agent in sequence."""
         from agents.news_agent import news_agent
         from agents.stock_data_agent import stock_data_agent
 
@@ -59,7 +57,7 @@ class TestWorkflowGraph:
 
 class TestToolIntegration:
     def test_stock_and_price_tools_chain(self, base_state):
-        """Test chaining get_stock_summary → get_price_history → calculate_price_change."""
+        """Test chaining get_stock_summary -> get_price_history -> calculate_price_change."""
         from tools.stock_tools import calculate_price_change, get_price_history, get_stock_summary
 
         summary = get_stock_summary.invoke({"ticker": "MSFT"})
@@ -82,6 +80,15 @@ class TestToolIntegration:
             assert "title" in art
             assert "source" in art
 
+    def test_portfolio_optimizer_integration(self):
+        """Test modern portfolio optimizer integration."""
+        from tools.portfolio_optimizer import optimize_portfolio
+        ret_a = [0.01, -0.005, 0.02, 0.015, -0.01] * 3
+        ret_b = [0.005, 0.01, -0.002, 0.008, 0.003] * 3
+        opt = optimize_portfolio(["AAPL", "NVDA"], {"AAPL": ret_a, "NVDA": ret_b})
+        assert "weights" in opt
+        assert "sharpe_ratio" in opt
+
 
 class TestStateAnnotations:
     def test_messages_accumulate_correctly(self, base_state):
@@ -89,7 +96,6 @@ class TestStateAnnotations:
         from agents.news_agent import news_agent
 
         state1 = news_agent(base_state)
-        # News agent should append at least one message
         assert len(state1["messages"]) >= 1
         assert any("News Agent" in m for m in state1["messages"])
 
