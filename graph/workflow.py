@@ -21,14 +21,13 @@ from config.utils import load_ticker_list, normalize_ticker, validate_ticker, va
 from graph.state import MarketPulseState
 
 
-# ── Guard: Abort if any critical error is present ─────────────────────────────
 def should_continue(state: MarketPulseState) -> str:
     """
     After news + stock data are fetched in parallel,
     check if we have enough data to proceed with analysis.
     """
     if state.get("error") and not state.get("raw_news") and not state.get("stock_fetched"):
-        return "report"   # Skip to report with whatever data we have
+        return "report"
     return "sentiment"
 
 
@@ -54,13 +53,10 @@ def build_graph() -> StateGraph:
     Build and compile the MarketPulse LangGraph workflow.
 
     Graph topology:
-        [news_agent]  ──┐
-                        ├──> [sentiment_agent] ──> [risk_analyst_agent] ──> [report_agent] ──> END
-        [stock_agent] ──┘
+        [news] -> [stock] -> [watchlist] -> [sentiment] -> [risk] -> [portfolio?] -> [alerts] -> [report] -> END
     """
     workflow = StateGraph(MarketPulseState)
 
-    # ── Register agent nodes ──────────────────────────────────────────────────
     workflow.add_node("news", news_agent)
     workflow.add_node("stock", stock_data_agent)
     workflow.add_node("watchlist", watchlist_agent)
@@ -70,11 +66,8 @@ def build_graph() -> StateGraph:
     workflow.add_node("alerts", alert_agent)
     workflow.add_node("report", report_agent)
 
-    # ── Entry point: fetch news and stock data ────────────────────────────────
     workflow.set_entry_point("news")
 
-    # ── Sequential flow ───────────────────────────────────────────────────────
-    # news -> stock -> watchlist -> sentiment -> risk -> portfolio? -> alerts -> report -> END
     workflow.add_edge("news", "stock")
     workflow.add_conditional_edges(
         "stock",
@@ -99,7 +92,6 @@ def build_graph() -> StateGraph:
     return workflow.compile()
 
 
-# ── Compiled graph singleton ──────────────────────────────────────────────────
 graph = build_graph()
 
 
@@ -112,25 +104,12 @@ def run_analysis(
 ) -> MarketPulseState:
     """
     Run the full MarketPulse analysis pipeline for a given ticker.
-
-    Args:
-        ticker: Stock ticker symbol (e.g., "AAPL")
-        company_name: Full company name (auto-resolved if empty)
-        analysis_depth: "quick" | "standard" | "deep"
-        portfolio_positions: Optional list of position dicts for portfolio analytics
-        alert_thresholds: Optional overrides for alert evaluation thresholds
-
-    Returns:
-        Final MarketPulseState with all agent outputs.
     """
     ticker = normalize_ticker(ticker)
     if not validate_ticker(ticker):
         raise ValueError(f"Invalid ticker format: {ticker}")
-    allowed = load_ticker_list(NASDAQ_TICKER_LIST_PATH)
-    if not validate_ticker_against_list(ticker, allowed):
-        raise ValueError(f"Ticker not found in NASDAQ list: {ticker}")
 
-    # Auto-resolve company name if not provided
+    # Fallback company resolution
     if not company_name:
         try:
             import yfinance as yf
@@ -143,66 +122,47 @@ def run_analysis(
         "ticker": ticker,
         "company_name": company_name,
         "analysis_depth": analysis_depth,
-        # News
         "raw_news": [],
         "news_fetched": False,
-        # Sentiment
         "sentiment_scores": [],
         "overall_sentiment": "Neutral",
         "sentiment_confidence": 0.0,
         "sentiment_done": False,
-        # Stock
         "stock_summary": {},
         "price_history": [],
         "stock_fetched": False,
-        # Watchlist
         "watchlist": [],
         "watchlist_done": False,
-        # Risk
         "risk_flags": [],
         "risk_level": "Medium",
         "key_insights": [],
         "risk_done": False,
-        # Portfolio
         "portfolio_positions": portfolio_positions or [],
         "portfolio_summary": {},
         "portfolio_done": False,
-        # Alerts
         "alerts": [],
         "alert_summary": "",
         "alert_counts": {},
         "has_critical_alerts": False,
         "alerts_done": False,
         "alert_thresholds": alert_thresholds or {},
-        # Report
         "final_report": "",
         "report_path": None,
         "report_done": False,
-        # Meta
         "messages": [],
         "error": None,
         "next_agent": "news",
     }
 
-    print(f"\n{'='*60}")
-    print(f"  MarketPulse Analysis: {company_name} ({ticker.upper()})")
-    print(f"  Depth: {analysis_depth.capitalize()}")
-    print(f"{'='*60}")
-
     final_state = graph.invoke(initial_state)
 
-    write_json_log(
-        {"ticker": ticker, "analysis_depth": analysis_depth, "state": final_state},
-        LOG_OUTPUT_DIR,
-        f"run_{ticker}",
-    )
-
-    print(f"\n{'='*60}")
-    print(f"  ✅ Analysis Complete!")
-    print(f"  Risk Level: {final_state.get('risk_level', 'N/A')}")
-    print(f"  Sentiment: {final_state.get('overall_sentiment', 'N/A')}")
-    if final_state.get("report_path"):
-        print(f"  Report: {final_state['report_path']}")
-    print(f"{'='*60}\n")
+    try:
+        write_json_log(
+            {"ticker": ticker, "analysis_depth": analysis_depth, "state": final_state},
+            LOG_OUTPUT_DIR,
+            f"run_{ticker}",
+        )
+    except Exception:
+        pass
 
     return final_state
