@@ -8,7 +8,6 @@ from typing import Any, Dict, List, Optional
 import plotly.graph_objects as go
 import streamlit as st
 
-# ── Claude Color Palette Tokens ───────────────────────────────────────────────
 CLAUDE_COLORS = {
     "bg_main": "#181816",
     "bg_card": "#22221f",
@@ -40,7 +39,6 @@ def get_claude_css() -> str:
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,500;0,600;1,400&display=swap');
 
-    /* Core Page Reset & Base Colors */
     html, body, [class*="css"], .stApp {{
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         background-color: {CLAUDE_COLORS["bg_main"]} !important;
@@ -52,13 +50,11 @@ def get_claude_css() -> str:
         max-width: 1320px;
     }}
 
-    /* Typography */
     h1, h2, h3, .claude-serif {{
         font-family: 'Lora', Georgia, serif !important;
         letter-spacing: -0.01em;
     }}
 
-    /* Sidebar Styling */
     section[data-testid="stSidebar"] {{
         background-color: {CLAUDE_COLORS["bg_sidebar"]} !important;
         border-right: 1px solid {CLAUDE_COLORS["border_subtle"]} !important;
@@ -71,7 +67,6 @@ def get_claude_css() -> str:
         font-size: 1.05rem !important;
     }}
 
-    /* Buttons */
     .stButton > button {{
         background: linear-gradient(135deg, {CLAUDE_COLORS["terracotta"]} 0%, #c86544 100%) !important;
         color: #ffffff !important;
@@ -103,7 +98,6 @@ def get_claude_css() -> str:
         border-color: {CLAUDE_COLORS["terracotta"]} !important;
     }}
 
-    /* Input Fields & Selectboxes */
     .stTextInput > div > div > input,
     .stSelectbox > div > div > div,
     .stMultiSelect > div > div {{
@@ -118,7 +112,6 @@ def get_claude_css() -> str:
         box-shadow: 0 0 0 2px rgba(218, 119, 86, 0.2) !important;
     }}
 
-    /* Cards & Container Containers */
     .claude-header {{
         background: linear-gradient(135deg, #1f1f1c 0%, #262420 100%);
         border: 1px solid {CLAUDE_COLORS["border"]};
@@ -186,7 +179,6 @@ def get_claude_css() -> str:
         font-family: 'Lora', serif;
     }}
 
-    /* Badges */
     .claude-badge {{
         display: inline-block;
         padding: 0.3rem 0.85rem;
@@ -219,7 +211,6 @@ def get_claude_css() -> str:
         border: 1px solid {CLAUDE_COLORS["border"]};
     }}
 
-    /* Alert / Flag Cards */
     .claude-flag-risk {{
         background: {CLAUDE_COLORS["rose_light"]};
         border-left: 3px solid {CLAUDE_COLORS["rose"]};
@@ -252,13 +243,11 @@ def get_claude_css() -> str:
         border-color: {CLAUDE_COLORS["border"]};
     }}
 
-    /* Dataframe Overrides */
     div[data-testid="stDataFrame"] {{
         background-color: {CLAUDE_COLORS["bg_card"]};
         border-radius: 10px;
     }}
 
-    /* Expander Styling */
     .stExpander {{
         background-color: {CLAUDE_COLORS["bg_card"]} !important;
         border: 1px solid {CLAUDE_COLORS["border_subtle"]} !important;
