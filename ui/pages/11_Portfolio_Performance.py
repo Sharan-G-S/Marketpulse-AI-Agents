@@ -1,204 +1,83 @@
 """
 Portfolio Performance Page — Streamlit UI for MarketPulse.
-
-Users enter positions (ticker, shares, avg cost), the app fetches live
-prices and displays P&L, weights, and a performance breakdown table.
+Track P&L, position weights, & sector asset allocation in Claude theme.
 """
 
-import pandas as pd
+import os
+import sys
 import streamlit as st
+import pandas as pd
+import plotly.graph_objects as go
 
-from tools.portfolio_performance import (
-    compute_portfolio,
-    sector_allocation,
-    top_holdings,
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from ui.theme import apply_claude_theme, render_claude_header, CLAUDE_COLORS, get_claude_plotly_layout
+from tools.portfolio_performance import compute_portfolio, sector_allocation
+
+st.set_page_config(page_title="Portfolio Performance — MarketPulse", page_icon="💼", layout="wide")
+apply_claude_theme()
+
+render_claude_header(
+    title="Portfolio Performance & Asset Allocation",
+    subtitle="Track unrealized P&L, position weights, sector exposure, and total portfolio valuation",
+    icon="💼"
 )
 
-# ── Page config ───────────────────────────────────────────────────────────────
-
-st.set_page_config(
-    page_title="Portfolio Performance — MarketPulse",
-    page_icon="💼",
-    layout="wide",
-)
-
-# ── CSS ───────────────────────────────────────────────────────────────────────
-
-st.markdown(
-    """
-    <style>
-    .port-header {
-        background: linear-gradient(135deg, #1e2a1e 0%, #2a3a2e 100%);
-        border: 1px solid #a6e3a1;
-        border-radius: 14px;
-        padding: 1.5rem 2rem;
-        margin-bottom: 1.5rem;
-    }
-    .port-header h2 { color: #a6e3a1; margin: 0; }
-    .gain  { color: #a6e3a1; font-weight: 700; }
-    .loss  { color: #f38ba8; font-weight: 700; }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-# ── Header ────────────────────────────────────────────────────────────────────
-
-st.markdown(
-    """
-    <div class="port-header">
-        <h2>💼 Portfolio Performance</h2>
-        <p style="color:#a6adc8;margin:0;">
-        Enter your holdings, fetch live prices, and track P&amp;L in real time.
-        </p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-# ── Position entry ────────────────────────────────────────────────────────────
-
-st.subheader("📋 Enter Positions")
-
-st.caption(
-    "Format each row as  **TICKER, shares, avg_cost**  (one per line). "
-    "Example:  `AAPL, 10, 145.50`"
-)
-
-default_positions = "AAPL, 10, 145.50\nMSFT, 5, 280.00\nTSLA, 8, 210.00\nNVDA, 3, 450.00"
-
-raw_input = st.text_area(
-    "Positions",
-    value=default_positions,
-    height=150,
-    key="port_positions",
-)
-
-# ── Parse positions ───────────────────────────────────────────────────────────
+st.sidebar.markdown("### 🧺 Portfolio Holdings Entry")
+num_pos = st.sidebar.number_input("Number of Positions", min_value=1, max_value=10, value=3)
 
 positions = []
-parse_errors = []
-for line in raw_input.strip().splitlines():
-    line = line.strip()
-    if not line:
-        continue
-    parts = [p.strip() for p in line.split(",")]
-    if len(parts) != 3:
-        parse_errors.append(f"⚠️ Skipped (invalid format): `{line}`")
-        continue
-    try:
-        positions.append({
-            "ticker":   parts[0].upper(),
-            "qty":      float(parts[1]),
-            "avg_cost": float(parts[2]),
-        })
-    except ValueError:
-        parse_errors.append(f"⚠️ Skipped (non-numeric qty/cost): `{line}`")
+for i in range(num_pos):
+    col_t, col_s, col_c = st.sidebar.columns([1, 1, 1])
+    tk = col_t.text_input(f"Ticker #{i+1}", value=["AAPL", "MSFT", "NVDA"][i % 3], key=f"tk_{i}").strip().upper()
+    sh = col_s.number_input(f"Shares #{i+1}", min_value=1.0, value=[10.0, 5.0, 15.0][i % 3], key=f"sh_{i}")
+    cp = col_c.number_input(f"Cost/Sh #{i+1}", min_value=1.0, value=[150.0, 300.0, 100.0][i % 3], key=f"cp_{i}")
+    positions.append({"ticker": tk, "shares": sh, "avg_cost": cp})
 
-for err in parse_errors:
-    st.warning(err)
+calc_btn = st.sidebar.button("💼 Evaluate Portfolio", use_container_width=True)
 
-# ── Fetch & compute ───────────────────────────────────────────────────────────
+if calc_btn or "port_res" in st.session_state:
+    if calc_btn:
+        with st.spinner("Fetching live market prices & computing portfolio P&L..."):
+            try:
+                res = compute_portfolio(positions)
+                st.session_state.port_res = res
+            except Exception as e:
+                st.error(f"Portfolio calculation failed: {e}")
+                st.session_state.port_res = {}
 
-run_btn = st.button("📈 Fetch Prices & Compute P&L", type="primary")
+    res = st.session_state.get("port_res", {})
+    if res and "error" not in res:
+        tot_val = res.get("total_market_value", 0)
+        tot_pnl = res.get("total_unrealised_pnl", 0)
+        pnl_pct = res.get("total_pnl_pct", 0)
 
-if run_btn and positions:
-    from tools.stock_tools import get_stock_summary
+        # Overview Metrics
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Total Market Value", f"${tot_val:,.2f}")
+        m2.metric("Unrealised P&L ($)", f"${tot_pnl:,.2f}")
+        m3.metric("Unrealised P&L (%)", f"{pnl_pct:+.2f}%")
 
-    price_map = {}
-    prog = st.progress(0, text="Fetching live prices…")
-    tickers = [p["ticker"] for p in positions]
+        st.markdown("<br>", unsafe_allow_html=True)
+        c1, c2 = st.columns([1, 1])
+        with c1:
+            st.markdown("<div class='claude-card-title'>📊 Sector Allocation Breakdown</div>", unsafe_allow_html=True)
+            sec_alloc = sector_allocation(res.get("positions", []))
+            if sec_alloc:
+                fig = go.Figure(go.Pie(
+                    labels=list(sec_alloc.keys()),
+                    values=list(sec_alloc.values()),
+                    hole=0.55,
+                    marker=dict(colors=[CLAUDE_COLORS["terracotta"], CLAUDE_COLORS["emerald"], CLAUDE_COLORS["gold"], CLAUDE_COLORS["blue"]]),
+                    textinfo="label+percent",
+                    textfont=dict(color=CLAUDE_COLORS["text_primary"]),
+                ))
+                fig.update_layout(get_claude_plotly_layout(height=300))
+                st.plotly_chart(fig, use_container_width=True)
 
-    for i, t in enumerate(tickers):
-        try:
-            summary = get_stock_summary.invoke({"ticker": t})
-            price = summary.get("current_price") or summary.get("regularMarketPrice")
-            if price:
-                price_map[t] = float(price)
-        except Exception:
-            pass
-        prog.progress((i + 1) / len(tickers), text=f"Fetched {t}")
-
-    prog.empty()
-
-    summary = compute_portfolio(positions, price_map)
-    st.session_state["port_summary"]  = summary
-    st.session_state["port_price_map"] = price_map
-
-summary = st.session_state.get("port_summary")
-
-if summary:
-    total_mv  = summary["total_market_value"]
-    total_pl  = summary["total_unrealised_pl"]
-    total_ret = summary["total_return_pct"]
-    pl_sign   = "gain" if total_pl >= 0 else "loss"
-
-    # ── Top metrics ───────────────────────────────────────────────────────────
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Total Market Value", f"${total_mv:,.2f}")
-    m2.metric(
-        "Unrealised P&L",
-        f"${total_pl:+,.2f}",
-        delta=f"{total_ret:+.2f}%",
-        delta_color="normal",
-    )
-    m3.metric("Best Performer",  summary["best_performer"])
-    m4.metric("Worst Performer", summary["worst_performer"])
-
-    st.divider()
-
-    # ── Position table ────────────────────────────────────────────────────────
-    st.subheader("📊 Position Breakdown")
-    rows = []
-    for r in summary["positions"]:
-        rows.append({
-            "Ticker":    r["ticker"],
-            "Shares":    r["qty"],
-            "Avg Cost":  f"${r['avg_cost']:.2f}",
-            "Price":     f"${r['current_price']:.2f}",
-            "Mkt Value": f"${r['market_value']:,.2f}",
-            "P&L":       f"${r['unrealised_pl']:+,.2f}",
-            "Return %":  f"{r['unrealised_pct']:+.2f}%",
-            "Weight %":  f"{r['weight_pct']:.2f}%",
-        })
-    df = pd.DataFrame(rows)
-    st.dataframe(df, use_container_width=True)
-
-    st.divider()
-
-    # ── Top holdings bar chart ────────────────────────────────────────────────
-    st.subheader("🏆 Top Holdings by Market Value")
-    top = top_holdings(summary, n=10)
-    df_top = pd.DataFrame(
-        {"Market Value": [r["market_value"] for r in top]},
-        index=[r["ticker"] for r in top],
-    )
-    st.bar_chart(df_top, height=250)
-
-    st.divider()
-
-    # ── Download ──────────────────────────────────────────────────────────────
-    csv_rows = [
-        {
-            "Ticker":       r["ticker"],
-            "Qty":          r["qty"],
-            "Avg Cost":     r["avg_cost"],
-            "Current Price":r["current_price"],
-            "Market Value": r["market_value"],
-            "P&L":          r["unrealised_pl"],
-            "Return %":     r["unrealised_pct"],
-            "Weight %":     r["weight_pct"],
-        }
-        for r in summary["positions"]
-    ]
-    csv = pd.DataFrame(csv_rows).to_csv(index=False)
-    st.download_button(
-        "⬇ Download Portfolio CSV",
-        data=csv,
-        file_name="marketpulse_portfolio.csv",
-        mime="text/csv",
-        key="dl_port_csv",
-    )
-
+        with c2:
+            st.markdown("<div class='claude-card-title'>📋 Position Breakdown Table</div>", unsafe_allow_html=True)
+            df_pos = pd.DataFrame(res.get("positions", []))
+            st.dataframe(df_pos, use_container_width=True, hide_index=True)
 else:
-    st.info("Enter your positions and click **Fetch Prices & Compute P&L** to begin.")
+    st.info("Enter holdings in the sidebar and click 'Evaluate Portfolio' to start.")
