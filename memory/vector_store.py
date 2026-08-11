@@ -1,15 +1,20 @@
 """
 Memory Module — FAISS Vector Store
 Stores and retrieves financial reports, news summaries, and
-analysis history using LangChain + FAISS embeddings.
+analysis history using LangChain + FAISS embeddings with graceful fallback.
 """
 
 import os
 from typing import List, Optional
 
-from langchain_community.vectorstores import FAISS
-from langchain_core.documents import Document
+try:
+    from langchain_community.vectorstores import FAISS
+    HAS_FAISS = True
+except ImportError:
+    FAISS = None
+    HAS_FAISS = False
 
+from langchain_core.documents import Document
 from config.settings import EMBEDDING_MODEL, VECTOR_STORE_PATH
 
 
@@ -25,17 +30,9 @@ def get_embeddings():
 
 
 def save_report_to_memory(ticker: str, report: str, metadata: dict = None) -> bool:
-    """
-    Save a generated investment report to the FAISS vector store.
-
-    Args:
-        ticker: Stock ticker symbol
-        report: Markdown report content
-        metadata: Additional metadata to store with the document
-
-    Returns:
-        True if saved successfully, False otherwise
-    """
+    if not HAS_FAISS:
+        print("[Memory] ⚠️ FAISS vector store optional package not installed.")
+        return False
     try:
         embeddings = get_embeddings()
         meta = {"ticker": ticker, "type": "investment_report", **(metadata or {})}
@@ -52,21 +49,13 @@ def save_report_to_memory(ticker: str, report: str, metadata: dict = None) -> bo
         return True
 
     except Exception as e:
-        print(f"[Memory] ⚠️  Could not save to vector store: {e}")
+        print(f"[Memory] ⚠️ Could not save to vector store: {e}")
         return False
 
 
 def search_similar_reports(query: str, k: int = 3) -> List[Document]:
-    """
-    Search the vector store for similar past reports.
-
-    Args:
-        query: Search query (e.g., company name, ticker, risk keywords)
-        k: Number of results to return
-
-    Returns:
-        List of matching Document objects
-    """
+    if not HAS_FAISS:
+        return []
     try:
         if not os.path.exists(VECTOR_STORE_PATH):
             return []
@@ -75,17 +64,15 @@ def search_similar_reports(query: str, k: int = 3) -> List[Document]:
         results = db.similarity_search(query, k=k)
         return results
     except Exception as e:
-        print(f"[Memory] ⚠️  Search failed: {e}")
+        print(f"[Memory] ⚠️ Search failed: {e}")
         return []
 
 
 def get_past_reports_for_ticker(ticker: str, k: int = 5) -> List[Document]:
-    """Retrieve past reports for a specific ticker from the vector store."""
     return search_similar_reports(f"{ticker} investment report analysis", k=k)
 
 
 def clear_memory():
-    """Clear all stored reports from the vector store (use with caution)."""
     import shutil
     if os.path.exists(VECTOR_STORE_PATH):
         shutil.rmtree(VECTOR_STORE_PATH)
