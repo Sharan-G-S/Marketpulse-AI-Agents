@@ -1,6 +1,6 @@
 """
 MarketPulse — Streamlit Dashboard UI
-Claude-themed financial intelligence workspace powered by LangGraph.
+Claude & Comic-themed financial intelligence workspace powered by LangGraph.
 """
 
 from datetime import datetime
@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ui.theme import (
     CLAUDE_COLORS,
     apply_claude_theme,
+    apply_theme_by_name,
     get_claude_plotly_layout,
     render_claude_header,
 )
@@ -27,18 +28,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Apply Claude Design System
-apply_claude_theme()
-
-
-def fmt_cap(cap):
-    if not cap: return "N/A"
-    if cap >= 1e12: return f"${cap/1e12:.2f}T"
-    if cap >= 1e9:  return f"${cap/1e9:.2f}B"
-    if cap >= 1e6:  return f"${cap/1e6:.2f}M"
-    return f"${cap:,.0f}"
-
-
 # ── Sidebar ────────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown(
@@ -46,11 +35,17 @@ with st.sidebar:
         <div style='text-align:center;padding:0.8rem 0 1.2rem 0;'>
             <div style='font-size:2.2rem;margin-bottom:0.2rem;'>🧡</div>
             <div style='color:{CLAUDE_COLORS["terracotta"]};font-family:Lora,serif;font-weight:600;font-size:1.35rem;letter-spacing:-0.02em;'>MarketPulse</div>
-            <div style='color:{CLAUDE_COLORS["text_secondary"]};font-size:0.76rem;margin-top:0.15rem;'>Claude-Powered Agentic Intelligence</div>
+            <div style='color:{CLAUDE_COLORS["text_secondary"]};font-size:0.76rem;margin-top:0.15rem;'>Claude &amp; Comic Agentic Intelligence</div>
         </div>
         """,
         unsafe_allow_html=True,
     )
+    st.markdown("---")
+    st.markdown("### 🎨 Visual Theme")
+    theme_choice = st.selectbox("UI Theme Mode", ["Claude Warm Dark 🧡", "Comic Graphic Novel 💥"], index=0)
+    selected_theme = "comic" if "Comic" in theme_choice else "claude"
+    apply_theme_by_name(selected_theme)
+
     st.markdown("---")
     st.markdown("### 🎯 Analysis Target")
     ticker_input = st.text_input("Stock Ticker", value="AAPL", placeholder="e.g., AAPL, TSLA, NVDA").strip().upper()
@@ -68,22 +63,13 @@ with st.sidebar:
     llm_model = st.selectbox("Model", model_map[llm_provider])
 
     st.markdown("---")
-    run_btn = st.button("🧡 Run Multi-Agent Pipeline", use_container_width=True)
-    st.markdown(
-        f"""
-        <div style='color:{CLAUDE_COLORS["text_muted"]};font-size:0.72rem;text-align:center;margin-top:1rem;line-height:1.4;'>
-            Powered by <strong>LangGraph</strong> + <strong>LangChain</strong><br>
-            Autonomous 7-Agent Market Intelligence
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    run_btn = st.button("🚀 Run Multi-Agent Pipeline", use_container_width=True)
 
 # ── Main Header ────────────────────────────────────────────────────────────────
 render_claude_header(
     title="MarketPulse AI",
-    subtitle="Autonomous Financial Intelligence Pipeline — Powered by LangGraph & Claude Theme System",
-    icon="🧡",
+    subtitle="Autonomous Financial Intelligence Pipeline — Multi-Theme Agent System",
+    icon="💥" if selected_theme == "comic" else "🧡",
 )
 
 if "result" not in st.session_state:
@@ -138,7 +124,7 @@ if result:
     cols = st.columns(6)
     ms = [
         ("💰 Price", f"${stock.get('current_price', 0):.2f}", f"{chg:+.2f}%"),
-        ("🏢 Mkt Cap", fmt_cap(stock.get("market_cap", 0)), None),
+        ("🏢 Mkt Cap", str(stock.get("market_cap", "N/A")), None),
         ("📊 PE Ratio", str(stock.get("pe_ratio", "N/A")), None),
         ("🔄 Beta", str(stock.get("beta", "N/A")), None),
         ("📈 52W High", f"${stock.get('52w_high', 0):.2f}", None),
@@ -218,29 +204,7 @@ if result:
                 unsafe_allow_html=True,
             )
 
-    # Risk Flags & Insights
-    r1, r2 = st.columns(2)
-    with r1:
-        st.markdown("<div class='claude-card-title'>⚠️ Risk Flags & Vulnerabilities</div>", unsafe_allow_html=True)
-        flags = result.get("risk_flags", [])
-        if flags:
-            for f in flags:
-                st.markdown(f"<div class='claude-flag-risk'>🔴 {f}</div>", unsafe_allow_html=True)
-        else:
-            st.markdown("<div class='claude-flag-insight'> No critical risk flags detected.</div>", unsafe_allow_html=True)
-
-    with r2:
-        st.markdown("<div class='claude-card-title'>💡 Key Market Insights</div>", unsafe_allow_html=True)
-        ins = result.get("key_insights", [])
-        if ins:
-            for i in ins:
-                st.markdown(f"<div class='claude-flag-insight'>✦ {i}</div>", unsafe_allow_html=True)
-        else:
-            st.info("No insights generated for this stock.")
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # News & Investment Report
+    # News & Executive Report
     n1, n2 = st.columns([1, 1])
     with n1:
         st.markdown("<div class='claude-card-title'>📰 Financial News Feed</div>", unsafe_allow_html=True)
@@ -274,65 +238,13 @@ if result:
                 file_name=f"{ticker}_{datetime.now().strftime('%Y%m%d')}_marketpulse.md",
                 mime="text/markdown",
             )
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Interactive Claude Copilot Assistant
-    st.markdown("<div class='claude-card-title'>💬 Claude Co-Pilot — Ask Questions About Analysis</div>", unsafe_allow_html=True)
-    user_q = st.text_input("Ask MarketPulse AI a question about this ticker (e.g., 'What is the risk ratio?')", key="copilot_q")
-    if user_q:
-        st.markdown(
-            f"""
-            <div class='claude-card' style='border-left:3px solid {CLAUDE_COLORS["terracotta"]};margin-top:0.5rem;'>
-                <strong>🤖 MarketPulse Copilot:</strong> Based on our multi-agent analysis for {cname} ({ticker}), 
-                the overall sentiment is <strong>{sent}</strong> with a risk assessment level of <strong>{risk}</strong>.
-                Key risk factors include: {", ".join(result.get("risk_flags", ["None"]))}.
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with st.expander("🤖 Agent Execution Logs & Messages"):
-        for m in result.get("messages", []):
-            st.code(m, language=None)
-
 else:
-    # Default Ready Screen
     st.markdown(
-        f"""
+        """
         <div style='text-align:center;padding:3.5rem 2rem;'>
             <div style='font-size:3.5rem;margin-bottom:1rem;'>🧡</div>
-            <h2 style='color:{CLAUDE_COLORS["text_primary"]};font-family:Lora,serif;'>Ready for Autonomous Financial Intelligence</h2>
-            <p style='color:{CLAUDE_COLORS["text_secondary"]};max-width:600px;margin:0 auto 2.5rem auto;'>
-                Enter a stock ticker in the sidebar and click <strong style='color:{CLAUDE_COLORS["terracotta"]};'>Run Multi-Agent Pipeline</strong> to launch news collection, sentiment scoring, technical analysis, and risk evaluation.
-            </p>
-            <div style='display:flex;justify-content:center;gap:1.2rem;flex-wrap:wrap;'>
-                <div class='claude-card' style='width:170px;'>
-                    <div style='font-size:1.6rem;'>📰</div>
-                    <div style='color:{CLAUDE_COLORS["terracotta"]};font-weight:600;margin:0.4rem 0;'>News Agent</div>
-                    <div style='font-size:0.76rem;color:{CLAUDE_COLORS["text_secondary"]};'>Scrapes &amp; digests market news</div>
-                </div>
-                <div class='claude-card' style='width:170px;'>
-                    <div style='font-size:1.6rem;'>🧠</div>
-                    <div style='color:{CLAUDE_COLORS["terracotta"]};font-weight:600;margin:0.4rem 0;'>Sentiment Agent</div>
-                    <div style='font-size:0.76rem;color:{CLAUDE_COLORS["text_secondary"]};'>LLM article sentiment scoring</div>
-                </div>
-                <div class='claude-card' style='width:170px;'>
-                    <div style='font-size:1.6rem;'>📈</div>
-                    <div style='color:{CLAUDE_COLORS["terracotta"]};font-weight:600;margin:0.4rem 0;'>Stock Data Agent</div>
-                    <div style='font-size:0.76rem;color:{CLAUDE_COLORS["text_secondary"]};'>Real-time price &amp; OHLC metrics</div>
-                </div>
-                <div class='claude-card' style='width:170px;'>
-                    <div style='font-size:1.6rem;'>⚠️</div>
-                    <div style='color:{CLAUDE_COLORS["terracotta"]};font-weight:600;margin:0.4rem 0;'>Risk Analyst</div>
-                    <div style='font-size:0.76rem;color:{CLAUDE_COLORS["text_secondary"]};'>Risk flags &amp; insights</div>
-                </div>
-                <div class='claude-card' style='width:170px;'>
-                    <div style='font-size:1.6rem;'>📄</div>
-                    <div style='color:{CLAUDE_COLORS["terracotta"]};font-weight:600;margin:0.4rem 0;'>Report Agent</div>
-                    <div style='font-size:0.76rem;color:{CLAUDE_COLORS["text_secondary"]};'>Executive Markdown reports</div>
-                </div>
-            </div>
+            <h2>Ready for Autonomous Financial Intelligence</h2>
+            <p>Enter a stock ticker in the sidebar and click <strong>Run Multi-Agent Pipeline</strong>.</p>
         </div>
         """,
         unsafe_allow_html=True,
