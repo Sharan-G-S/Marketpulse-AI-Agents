@@ -1,16 +1,19 @@
-# 🧡 MarketPulse AI — Autonomous Multi-Agent Financial Intelligence Platform
+# 💥 MarketPulse AI — Worldwide Autonomous Multi-Agent Financial Intelligence Platform
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/)
 [![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph-orange.svg)](https://github.com/langchain-ai/langgraph)
 [![LangChain](https://img.shields.io/badge/LLM-LangChain-green.svg)](https://github.com/langchain-ai/langchain)
-[![UI Theme](https://img.shields.io/badge/UI-Claude_Theme_Dark-da7756.svg)](https://streamlit.io/)
-[![Tests](https://img.shields.io/badge/Tests-523_Passing-success.svg)](https://docs.pytest.org/)
+[![UI Theme](https://img.shields.io/badge/UI-Claude_Dark_%26_Comic_PopArt-ffde59.svg)](https://streamlit.io/)
+[![Tests](https://img.shields.io/badge/Tests-547_Passing-success.svg)](https://docs.pytest.org/)
 
-**MarketPulse AI** is a state-of-the-art, production-level financial intelligence system powered by a **7-Agent LangGraph StateGraph pipeline**. It orchestrates autonomous AI agents to collect financial news, fetch real-time market quotes, perform per-article LLM sentiment scoring, analyze downside risk flags, compute Efficient Frontier portfolio weights, and deliver publication-grade investment reports.
+**MarketPulse AI** is a world-class, production-grade financial intelligence engine powered by a **7-Agent LangGraph StateGraph pipeline**. It orchestrates autonomous AI agents to collect financial news, fetch real-time market quotes, perform per-article LLM sentiment scoring, analyze downside risk flags, compute Efficient Frontier portfolio weights, and deliver publication-grade investment reports in both **Claude Warm Dark Theme** and **Comic Pop-Art Graphic Novel UI**!
 
 ---
 
-## 📸 Screenshots & UI Previews
+## 💥 Visual Themes & UI Previews
+
+### 💥 Comic / Graphic Novel Financial Intelligence Mode
+![MarketPulse Comic UI Dashboard](docs/images/comic_dashboard.jpg)
 
 ### 🧡 Main Dashboard (Claude Warm Dark Theme)
 ![MarketPulse Main Dashboard](docs/images/dashboard_claude.jpg)
@@ -20,9 +23,9 @@
 
 ---
 
-## ✨ Key Features
+## ✨ Key Innovations & Features
 
-- **🧡 Claude-Themed Design System (`ui/theme.py`)**: Warm dark background (`#181816`), terracotta primary controls (`#da7756`), elegant serif typography ('Lora'), and custom Plotly dark charts.
+- **🎨 Multi-Theme System (`ui/theme.py` & `ui/comic_theme.py`)**: Dynamic in-app toggle between **Claude Warm Dark** (`#181816` terracotta aesthetic) and **Comic Pop-Art Graphic Novel UI** (`#ffde59` vibrant yellow, speech bubble cards, and starburst action badges).
 - **🤖 Autonomous 7-Agent Directed Graph**:
   - `news_agent`: Scrapes global news feeds via NewsAPI with keyword fallback.
   - `stock_data_agent`: Fetches real-time price quotes, market cap, PE ratio, and historical OHLC history via yfinance.
@@ -31,10 +34,13 @@
   - `risk_analyst_agent`: Synthesizes market volatility, beta, and news data into downside risk flags.
   - `portfolio_tracker`: Computes Sharpe ratios, concentration risk, and Efficient Frontier asset allocation.
   - `report_agent`: Generates executive Markdown investment intelligence reports.
-- **⚡ In-Memory TTL Data Cache (`tools/cache.py`)**: Reduces yfinance and news fetch latency by up to 80%.
-- **📈 Efficient Frontier Portfolio Optimizer (`tools/portfolio_optimizer.py`)**: Mean-variance portfolio weight optimization and risk-adjusted Sharpe ratio maximization.
-- **💬 Interactive Claude Co-Pilot Chat**: In-app natural language query assistant for financial report Q&A.
-- **🧪 523+ Unit & Integration Tests**: 100% test pass rate verifying tools, agents, indicators, and UI components.
+- **⚡ Worldwide Production Optimizations**:
+  - **In-Memory & Persistent Disk TTL Cache (`tools/disk_cache.py`)**: Reduces quote latency by up to 80%.
+  - **Global World Market Index Scanner (`tools/world_market_scanner.py`)**: Monitors S&P 500, Nasdaq, FTSE 100, Nikkei 225, and Nifty 50 macro regimes.
+  - **ESG Sustainability Scorer (`tools/esg_scorer.py`)**: Environmental, Social, and Governance corporate ratings.
+  - **Dark Pool & Institutional Order Flow Tracker (`tools/dark_pool_tracker.py`)**: Detects off-exchange volume anomalies.
+  - **Monte Carlo 10,000-Path Simulator (`tools/monte_carlo.py`)**: Stochastic Geometric Brownian Motion asset return distribution and VaR model.
+  - **Security & Authorization Middleware (`config/security.py`, `config/auth.py`)**: Secret redaction and JWT header authorization.
 
 ---
 
@@ -52,7 +58,7 @@ graph TD
     F -->|Single Asset| I[alert_engine]
     G --> I
     I --> H
-    H --> J[Executive Synthesis & Report Download]
+    H --> J[Executive Synthesis / Comic Narrative & Report Download]
 ```
 
 ---
@@ -74,7 +80,7 @@ export OPENAI_API_KEY="your-openai-api-key"
 export GOOGLE_API_KEY="your-google-api-key"
 ```
 
-### 3. Launching the Claude-Themed Dashboard
+### 3. Launching the Multi-Theme Dashboard
 ```bash
 streamlit run ui/app.py
 ```
@@ -86,9 +92,9 @@ python main.py --ticker AAPL --depth standard
 
 ---
 
-## 🧪 Running the Test Suite
+## 🧪 Test Suite Verification
 
-Run the full pytest suite across all 523 unit and integration tests:
+Run the full pytest suite across all 547+ unit and integration tests:
 ```bash
 python -m pytest
 ```
