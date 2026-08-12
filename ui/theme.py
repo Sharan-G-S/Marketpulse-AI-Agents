@@ -1,6 +1,6 @@
 """
-MarketPulse — Claude UI Design System & Styling Engine
-Provides unified CSS injection, Claude dark color palette, custom Plotly styling,
+MarketPulse — Claude & Comic UI Design System & Styling Engine
+Provides unified CSS injection, Claude dark color palette, Comic pop-art palette,
 and reusable UI component renderers across the application.
 """
 
@@ -34,7 +34,6 @@ CLAUDE_COLORS = {
 
 
 def get_claude_css() -> str:
-    """Returns full Claude CSS ruleset for Streamlit injection."""
     return f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,500;0,600;1,400&display=swap');
@@ -258,12 +257,19 @@ def get_claude_css() -> str:
 
 
 def apply_claude_theme():
-    """Injects Claude styling into current Streamlit page."""
     st.markdown(get_claude_css(), unsafe_allow_html=True)
 
 
+def apply_theme_by_name(theme_name: str = "claude"):
+    """Applies theme dynamically by name ('claude' or 'comic')."""
+    if theme_name.lower() == "comic":
+        from ui.comic_theme import apply_comic_theme
+        apply_comic_theme()
+    else:
+        apply_claude_theme()
+
+
 def get_claude_plotly_layout(height: int = 340, title: str = "") -> Dict[str, Any]:
-    """Returns a unified Plotly layout dictionary matching Claude theme."""
     return dict(
         title=dict(text=title, font=dict(family="Lora, serif", size=15, color=CLAUDE_COLORS["text_primary"])),
         paper_bgcolor="rgba(0,0,0,0)",
@@ -291,7 +297,6 @@ def get_claude_plotly_layout(height: int = 340, title: str = "") -> Dict[str, An
 
 
 def render_claude_header(title: str, subtitle: str, icon: str = "🧡"):
-    """Renders styled header section."""
     st.markdown(
         f"""
         <div class="claude-header">
