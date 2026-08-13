@@ -1,11 +1,10 @@
 """
 Technical Indicators Module
 Computes RSI, MACD, Bollinger Bands, and moving averages
-from OHLCV price history data.
+from OHLCV price history data with division by zero guards.
 """
 
 from typing import Any, Dict, List, Optional
-
 import pandas as pd
 
 from tools.fibonacci import calculate_fibonacci_levels
@@ -14,17 +13,10 @@ from tools.momentum import get_momentum_summary
 
 def compute_rsi(closes: List[float], period: int = 14) -> float:
     """
-    Compute the Relative Strength Index (RSI) for a list of closing prices.
-
-    Args:
-        closes: List of closing prices (oldest first)
-        period: RSI lookback period (default 14)
-
-    Returns:
-        RSI value between 0 and 100
+    Compute Relative Strength Index (RSI) with zero-gain/loss bounds safety.
     """
-    if len(closes) < period + 1:
-        return 50.0   # Neutral default if insufficient data
+    if not closes or len(closes) < period + 1:
+        return 50.0
 
     series = pd.Series(closes)
     delta = series.diff()
@@ -34,9 +26,15 @@ def compute_rsi(closes: List[float], period: int = 14) -> float:
     avg_gain = gain.ewm(com=period - 1, min_periods=period).mean()
     avg_loss = loss.ewm(com=period - 1, min_periods=period).mean()
 
+    if avg_loss.iloc[-1] == 0:
+        return 100.0 if avg_gain.iloc[-1] > 0 else 50.0
+
     rs = avg_gain / avg_loss
     rsi = 100 - (100 / (1 + rs))
-    return round(float(rsi.iloc[-1]), 2)
+    val = float(rsi.iloc[-1])
+    if pd.isna(val):
+        return 50.0
+    return round(val, 2)
 
 
 def compute_macd(
@@ -45,12 +43,6 @@ def compute_macd(
     slow: int = 26,
     signal: int = 9,
 ) -> Dict[str, float]:
-    """
-    Compute MACD line, signal line, and histogram.
-
-    Returns:
-        Dict with 'macd', 'signal', 'histogram', and 'crossover' keys
-    """
     if not closes or len(closes) < slow + signal:
         return {"macd": 0.0, "signal": 0.0, "histogram": 0.0, "crossover": "Insufficient data"}
 
@@ -78,13 +70,7 @@ def compute_macd(
 def compute_bollinger_bands(
     closes: List[float], period: int = 20, std_dev: float = 2.0
 ) -> Dict[str, float]:
-    """
-    Compute Bollinger Bands (upper, middle, lower) for closing prices.
-
-    Returns:
-        Dict with 'upper', 'middle', 'lower', 'bandwidth', 'position' keys
-    """
-    if len(closes) < period:
+    if not closes or len(closes) < period:
         return {"upper": 0.0, "middle": 0.0, "lower": 0.0, "bandwidth": 0.0, "position": "N/A"}
 
     series = pd.Series(closes)
@@ -101,7 +87,6 @@ def compute_bollinger_bands(
     lower_val = round(float(lower.iloc[-1]), 2)
     bandwidth = round((upper_val - lower_val) / mid_val * 100, 2) if mid_val else 0.0
 
-    # Determine price position within bands
     if curr_price >= upper_val:
         position = "Overbought"
     elif curr_price <= lower_val:
@@ -123,21 +108,7 @@ def compute_stochastic_oscillator(
     k_period: int = 14,
     d_period: int = 3,
 ) -> Dict[str, Any]:
-    """
-    Compute the Stochastic Oscillator (%K and %D lines).
-
-    %K = (Close - Lowest Low) / (Highest High - Lowest Low) * 100
-    %D = Simple moving average of %K over d_period bars.
-
-    Args:
-        price_history: List of OHLCV dicts with 'high', 'low', 'close' keys.
-        k_period: Lookback period for %K (default 14).
-        d_period: Smoothing period for %D (default 3).
-
-    Returns:
-        Dict with 'k', 'd', 'signal' and 'zone' keys.
-    """
-    if len(price_history) < k_period:
+    if not price_history or len(price_history) < k_period:
         return {"k": None, "d": None, "signal": "Insufficient data", "zone": "N/A"}
 
     try:
@@ -182,7 +153,6 @@ def compute_stochastic_oscillator(
 
 
 def compute_moving_averages(closes: List[float]) -> Dict[str, Any]:
-    """Compute SMA-20, SMA-50, EMA-12, EMA-26 and their trend signals."""
     series = pd.Series(closes)
     result: Dict[str, Any] = {}
 
@@ -198,7 +168,6 @@ def compute_moving_averages(closes: List[float]) -> Dict[str, Any]:
         else:
             result[f"ema_{span}"] = None
 
-    # Golden/Death cross signal
     sma20 = result.get("sma_20")
     sma50 = result.get("sma_50")
     if sma20 and sma50:
@@ -210,20 +179,7 @@ def compute_moving_averages(closes: List[float]) -> Dict[str, Any]:
 
 
 def compute_atr(price_history: List[Dict], period: int = 14) -> Dict[str, Any]:
-    """
-    Compute the Average True Range (ATR) for measuring price volatility.
-
-    True Range is max(High-Low, |High-PrevClose|, |Low-PrevClose|).
-    ATR is the exponential moving average of True Range over `period` bars.
-
-    Args:
-        price_history: List of OHLCV dicts with 'high', 'low', 'close' keys.
-        period: ATR lookback period (default 14).
-
-    Returns:
-        Dict with 'atr', 'atr_pct' (relative to last close), and 'volatility_label'.
-    """
-    if len(price_history) < period + 1:
+    if not price_history or len(price_history) < period + 1:
         return {"atr": None, "atr_pct": None, "volatility_label": "Insufficient data"}
 
     try:
@@ -258,7 +214,6 @@ def compute_atr(price_history: List[Dict], period: int = 14) -> Dict[str, Any]:
 
 
 def compute_vwap(price_history: List[Dict]) -> float:
-    """Compute Volume Weighted Average Price (VWAP)."""
     if not price_history:
         return 0.0
     cumulative_pv = 0.0
@@ -277,7 +232,6 @@ def compute_vwap(price_history: List[Dict]) -> float:
 
 
 def compute_obv(price_history: List[Dict]) -> float:
-    """Compute On-Balance Volume (OBV)."""
     if not price_history:
         return 0.0
     obv = 0.0
@@ -293,28 +247,19 @@ def compute_obv(price_history: List[Dict]) -> float:
 
 
 def get_all_indicators(price_history: List[Dict]) -> Dict[str, Any]:
-    """
-    Compute all technical indicators from a price history list.
-
-    Args:
-        price_history: List of OHLCV dicts (from get_price_history tool)
-
-    Returns:
-        Dict containing RSI, MACD, Bollinger Bands, Moving Averages,
-        Stochastic Oscillator, Average True Range, VWAP, OBV, and Fibonacci.
-    """
     if not price_history or "error" in price_history[0]:
         return {"error": "Insufficient price data for technical analysis"}
 
-    closes = [r["close"] for r in price_history if "close" in r]
+    closes = [r["close"] for r in price_history if isinstance(r, dict) and "close" in r]
     if not closes:
         return {"error": "No close prices available in history"}
 
+    rsi_val = compute_rsi(closes)
     return {
-        "rsi": compute_rsi(closes),
+        "rsi": rsi_val,
         "rsi_signal": (
-            "Overbought (RSI > 70)" if compute_rsi(closes) > 70
-            else "Oversold (RSI < 30)" if compute_rsi(closes) < 30
+            "Overbought (RSI > 70)" if rsi_val > 70
+            else "Oversold (RSI < 30)" if rsi_val < 30
             else "Neutral (RSI 30-70)"
         ),
         "macd": compute_macd(closes),
