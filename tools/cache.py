@@ -1,6 +1,6 @@
 """
 MarketPulse — Data Caching Layer
-In-memory & disk TTL caching system for yfinance price quotes and financial news.
+In-memory & disk TTL caching system with automatic stale entry cleaner.
 """
 
 from functools import wraps
@@ -31,6 +31,16 @@ def cache_ttl(seconds: int = 300):
         return wrapper
 
     return decorator
+
+
+def evict_stale_cache(max_age_seconds: int = 3600):
+    """Removes all cache entries older than max_age_seconds."""
+    global _CACHE
+    now = time.time()
+    stale_keys = [k for k, (_, ts) in _CACHE.items() if now - ts > max_age_seconds]
+    for k in stale_keys:
+        del _CACHE[k]
+    return len(stale_keys)
 
 
 def clear_cache():
