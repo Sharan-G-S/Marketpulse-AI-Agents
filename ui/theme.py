@@ -1,7 +1,7 @@
 """
 MarketPulse — Claude & Comic UI Design System & Styling Engine
 Provides unified CSS injection, Claude dark color palette, Comic pop-art palette,
-and reusable UI component renderers across the application.
+and polished UI component renderers across all 19 application pages.
 """
 
 from typing import Any, Dict, List, Optional
@@ -160,6 +160,7 @@ def get_claude_css() -> str:
         border-radius: 12px;
         padding: 1rem 1.2rem;
         text-align: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }}
 
     .claude-metric-lbl {{
