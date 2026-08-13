@@ -1,6 +1,6 @@
 """
 Stock Market Data Tools
-Wraps yfinance into LangChain-compatible @tool functions.
+Wraps yfinance into LangChain-compatible @tool functions with ZeroDivision guards.
 """
 
 from datetime import datetime, timezone
@@ -61,8 +61,6 @@ def get_stock_summary(ticker: str) -> Dict[str, Any]:
 def get_price_history(ticker: str, period: str = "1mo", interval: str = "1d") -> List[Dict[str, Any]]:
     """
     Fetch historical OHLCV price data for a ticker.
-    period options: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y
-    interval options: 1m, 5m, 15m, 1h, 1d, 1wk, 1mo
     """
     try:
         if not ticker:
@@ -91,7 +89,7 @@ def get_price_history(ticker: str, period: str = "1mo", interval: str = "1d") ->
 @tool
 def get_financials(ticker: str) -> Dict[str, Any]:
     """
-    Fetch key financial statements for a ticker (income statement, balance sheet summary).
+    Fetch key financial statements for a ticker.
     """
     try:
         stock = yf.Ticker(ticker)
@@ -120,22 +118,26 @@ def get_financials(ticker: str) -> Dict[str, Any]:
 @tool
 def calculate_price_change(price_history: List[Dict]) -> Dict[str, Any]:
     """
-    Calculate percentage price change, momentum, and trend from price history.
+    Calculate percentage price change, momentum, and trend from price history with ZeroDivision guards.
     """
     try:
         if not price_history or "error" in price_history[0]:
             return {"error": "Invalid price history"}
 
-        closes = [r["close"] for r in price_history if "close" in r]
+        closes = [r["close"] for r in price_history if isinstance(r, dict) and "close" in r and r["close"] is not None]
         if len(closes) < 2:
             return {"error": "Insufficient data"}
 
         first, last = closes[0], closes[-1]
-        change_pct = round(((last - first) / first) * 100, 2)
+        if first == 0:
+            change_pct = 0.0
+        else:
+            change_pct = round(((last - first) / first) * 100, 2)
 
-        # Simple momentum: compare last 5 days vs rest
         recent = closes[-5:] if len(closes) >= 5 else closes
         momentum = "Upward" if recent[-1] > recent[0] else "Downward"
+
+        volatility = round(float(pd.Series(closes).std() or 0.0), 2)
 
         return {
             "start_price": first,
@@ -145,7 +147,7 @@ def calculate_price_change(price_history: List[Dict]) -> Dict[str, Any]:
             "momentum": momentum,
             "highest": max(closes),
             "lowest": min(closes),
-            "volatility": round(pd.Series(closes).std(), 2),
+            "volatility": volatility,
         }
     except Exception as e:
         return {"error": str(e)}
