@@ -1,10 +1,10 @@
-# MarketPulse AI — 19 Streamlit Subpages Directory & Navigation Map
+# MarketPulse AI — 19 Streamlit Subpages Directory & Operations Manual
 
 This document catalogues all **19 interactive subpages** in the MarketPulse AI Agents workspace.
 
 ---
 
-## 📑 19 Subpage Directory
+## 📑 19 Subpage Directory Map
 
 | Page # | File | Features & Description |
 | :--- | :--- | :--- |
