@@ -12,6 +12,7 @@ import plotly.graph_objects as go
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from ui.comic_theme import COMIC_COLORS, apply_comic_theme, get_comic_plotly_layout, render_comic_header
+from agents.comic_agent import generate_comic_storyboard
 
 st.set_page_config(page_title="Comic Dashboard — MarketPulse", page_icon="💥", layout="wide")
 apply_comic_theme()
@@ -55,37 +56,33 @@ if launch_btn or "comic_mission_res" in st.session_state:
             unsafe_allow_html=True,
         )
 
-        # Comic Strip Panels
+        panels = generate_comic_storyboard(res)
+
         col1, col2 = st.columns(2)
-
-        with col1:
-            st.markdown(
-                f"""
-                <div class="comic-bubble">
-                    <div class="comic-card-title">PANEL 1: 📰 NEWS AGENT RECONNAISSANCE</div>
-                    <div style="font-size:1.05rem;font-weight:700;">
-                        "I've scanned the news feeds! Found {len(res.get('raw_news', []))} intelligence reports."
+        for i, panel in enumerate(panels):
+            target_col = col1 if i % 2 == 0 else col2
+            with target_col:
+                st.markdown(
+                    f"""
+                    <div class="comic-bubble">
+                        <div class="comic-card-title">{panel['panel']}: {panel['title']}</div>
+                        <div style="font-size:1.05rem;font-weight:700;margin-bottom:0.4rem;">
+                            "{panel['dialogue']}"
+                        </div>
+                        <div style="color:{COMIC_COLORS['text_muted']};font-size:0.85rem;">
+                            {panel['narrative']}
+                        </div>
+                        <div style="margin-top:0.4rem;">
+                            <span class="comic-starburst" style="font-size:0.9rem;padding:0.2rem 0.6rem;">
+                                {panel['sound_effect']}
+                            </span>
+                        </div>
                     </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+                    """,
+                    unsafe_allow_html=True,
+                )
 
-        with col2:
-            st.markdown(
-                f"""
-                <div class="comic-bubble">
-                    <div class="comic-card-title">PANEL 2: ⚠️ RISK ANALYST EVALUATION</div>
-                    <div style="font-size:1.05rem;font-weight:700;">
-                        "KAPOW! Overall risk level is rated <strong>{risk.upper()}</strong>!"
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-        # Chart Panel
-        st.markdown("<div class='comic-card-title'>PANEL 3: 📈 PRICE HISTORY BATTLE CHART</div>", unsafe_allow_html=True)
+        st.markdown("<div class='comic-card-title'>PANEL 5: 📈 PRICE HISTORY BATTLE CHART</div>", unsafe_allow_html=True)
         ph = res.get("price_history", [])
         if ph and "error" not in ph[0]:
             df = pd.DataFrame(ph)
