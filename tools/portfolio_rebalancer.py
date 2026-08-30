@@ -13,14 +13,6 @@ def calculate_portfolio_rebalance_orders(
 ) -> Dict[str, Any]:
     """
     Computes dollar and share trade rebalance actions.
-
-    Args:
-        positions: List of position dicts (ticker, qty, current_price, market_value)
-        target_weights: Dict of target weight percentages (e.g. {"AAPL": 40.0, "NVDA": 60.0})
-        total_cash_available: Additional unallocated cash
-
-    Returns:
-        Dict with total_portfolio_val, trade_orders, and rebalance_status.
     """
     if not positions:
         return {"error": "No positions provided for rebalancing."}
@@ -55,3 +47,24 @@ def calculate_portfolio_rebalance_orders(
         "trade_orders": orders,
         "rebalance_status": "Rebalance Trades Generated",
     }
+
+
+def compute_portfolio_rebalancing(
+    positions: List[Dict[str, Any]],
+    target_weights: Dict[str, float],
+    total_cash: float = 0.0,
+) -> Dict[str, Any]:
+    """Alias helper for backward compatibility."""
+    return calculate_portfolio_rebalance_orders(positions, target_weights, total_cash)
+
+
+def format_rebalance_report(rebalance_res: Dict[str, Any]) -> str:
+    """Formats rebalancing results as Markdown summary."""
+    if "error" in rebalance_res:
+        return f"Rebalancing error: {rebalance_res['error']}"
+
+    orders = rebalance_res.get("trade_orders", [])
+    lines = [f"# Portfolio Rebalancing Report (Total Value: ${rebalance_res.get('total_portfolio_value', 0):,.2f})\n"]
+    for o in orders:
+        lines.append(f"- **{o['ticker']}**: {o['action']} ${o['dollar_difference']:,.2f} ({o['shares_difference']} shares)")
+    return "\n".join(lines)
