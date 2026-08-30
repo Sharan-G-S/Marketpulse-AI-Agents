@@ -4,7 +4,7 @@
 [![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph-orange.svg)](https://github.com/langchain-ai/langgraph)
 [![LangChain](https://img.shields.io/badge/LLM-LangChain-green.svg)](https://github.com/langchain-ai/langchain)
 [![UI Theme](https://img.shields.io/badge/UI-Claude_Dark_%26_Comic_PopArt-ffde59.svg)](https://streamlit.io/)
-[![Tests](https://img.shields.io/badge/Tests-562_Passing-success.svg)](https://docs.pytest.org/)
+[![Tests](https://img.shields.io/badge/Tests-564_Passing-success.svg)](https://docs.pytest.org/)
 
 **MarketPulse AI** is a world-class, enterprise-grade financial intelligence platform featuring **19 specialized interactive subpages** and a **7-Agent LangGraph StateGraph pipeline**. It orchestrates autonomous AI agents to collect financial news, fetch real-time market quotes, perform per-article LLM sentiment scoring, analyze downside risk flags, compute Efficient Frontier portfolio weights, and deliver publication-grade investment reports in both **Claude Warm Dark Theme** and **Comic Pop-Art Graphic Novel UI**!
 
@@ -50,26 +50,21 @@
 
 ---
 
-## 🛡️ Production Bug Fixes & Resilience
+## 🛡️ Production Resilience & Security
 
-- **ZeroDivision & NaN Safeguards**: Fixed division by zero in `calculate_price_change`, `sharpe_ratio`, `max_drawdown`, and `compute_position`.
-- **NoneType Cost Basis Handling**: Fixed NoneType casting error in `compute_portfolio` when position average cost is missing.
-- **RSI Boundary Guard**: Guarded against zero loss series in `compute_rsi` when prices move exclusively upwards.
-- **Zero Warnings Pytest Suite**: Cleaned up `pyproject.toml` configuration to ensure 100% warning-free test execution.
+- **ZeroDivision & NaN Safeguards**: Fixed division by zero in price change, Sharpe ratio, max drawdown, and position metrics.
+- **NoneType Cost Basis Handling**: NoneType safety guards in portfolio performance trackers.
+- **Security Input XSS Shield**: Sanitization of input strings against XSS script injection and command execution.
+- **Zero Warnings Pytest Suite**: 100% warning-free test execution across 564 unit and integration tests.
 
 ---
 
 ## 🚀 Quickstart Guide
 
-### 1. Installation
 ```bash
 git clone https://github.com/Sharan-G-S/Marketpulse-AI-Agents.git
 cd marketpulse-ai-agents
 pip install -r requirements.txt
-```
-
-### 2. Launching the 19-Page Workspace
-```bash
 streamlit run ui/app.py
 ```
 
@@ -77,7 +72,7 @@ streamlit run ui/app.py
 
 ## 🧪 Test Suite Verification
 
-Run the full pytest suite across all 562+ unit and integration tests:
+Run the full pytest suite:
 ```bash
 python -m pytest
 ```
