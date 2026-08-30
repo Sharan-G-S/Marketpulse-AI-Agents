@@ -29,7 +29,6 @@ def get_comic_css() -> str:
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap');
 
-    /* Base Reset & Comic Typography */
     html, body, [class*="css"], .stApp {{
         font-family: 'Comic Neue', 'Chalkboard', cursive, sans-serif !important;
         background-color: #f8f6ee !important;
@@ -49,7 +48,6 @@ def get_comic_css() -> str:
         text-shadow: 2px 2px 0px {COMIC_COLORS["yellow"]};
     }}
 
-    /* Sidebar Comic Styling */
     section[data-testid="stSidebar"] {{
         background-color: {COMIC_COLORS["yellow"]} !important;
         border-right: 4px solid {COMIC_COLORS["ink_black"]} !important;
@@ -62,7 +60,6 @@ def get_comic_css() -> str:
         text-shadow: 2px 2px 0px #000000 !important;
     }}
 
-    /* Comic Action Buttons */
     .stButton > button {{
         background: {COMIC_COLORS["red"]} !important;
         color: #ffffff !important;
@@ -83,7 +80,6 @@ def get_comic_css() -> str:
         box-shadow: 7px 7px 0px {COMIC_COLORS["ink_black"]} !important;
     }}
 
-    /* Input Controls */
     .stTextInput > div > div > input,
     .stSelectbox > div > div > div {{
         background-color: #ffffff !important;
@@ -94,7 +90,6 @@ def get_comic_css() -> str:
         box-shadow: 3px 3px 0px {COMIC_COLORS["ink_black"]} !important;
     }}
 
-    /* Speech Bubble Cards */
     .comic-bubble {{
         position: relative;
         background: {COMIC_COLORS["bubble_bg"]};
