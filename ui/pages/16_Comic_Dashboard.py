@@ -11,7 +11,7 @@ import plotly.graph_objects as go
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from ui.comic_theme import COMIC_COLORS, apply_comic_theme, get_comic_plotly_layout, render_comic_header
+from ui.comic_theme import COMIC_COLORS, apply_comic_theme, get_comic_plotly_layout, render_comic_header, render_comic_sfx
 from agents.comic_agent import generate_comic_storyboard
 
 st.set_page_config(page_title="Comic Dashboard — MarketPulse", page_icon="💥", layout="wide")
@@ -83,6 +83,7 @@ if launch_btn or "comic_mission_res" in st.session_state:
                 )
 
         st.markdown("<div class='comic-card-title'>PANEL 5: 📈 PRICE HISTORY BATTLE CHART</div>", unsafe_allow_html=True)
+        render_comic_sfx("KAPOW!")
         ph = res.get("price_history", [])
         if ph and "error" not in ph[0]:
             df = pd.DataFrame(ph)
