@@ -1,7 +1,7 @@
 """
-MarketPulse — Claude & Comic UI Design System & Styling Engine v2.0
+MarketPulse — Claude & Comic UI Design System & Styling Engine v2.5
 Provides unified CSS injection, Claude dark color palette, Comic pop-art palette,
-and polished UI component renderers across all 19 application pages.
+and responsive header cards across all 19 application subpages.
 """
 
 from typing import Any, Dict, List, Optional
