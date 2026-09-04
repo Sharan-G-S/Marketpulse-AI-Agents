@@ -1,7 +1,7 @@
 """
 MarketPulse — Comic & Graphic Novel Financial UI Theme Engine
 Provides vibrant pop-art styling, speech bubble cards, comic badges,
-and custom Plotly pop-art chart layouts.
+and custom Plotly pop-art chart layouts with sound effect visual triggers.
 """
 
 from typing import Any, Dict
@@ -118,8 +118,25 @@ def get_comic_css() -> str:
         transform: rotate(-3deg);
         box-shadow: 3px 3px 0px {COMIC_COLORS["border"]};
     }}
+
+    .comic-sfx-badge {{
+        display: inline-block;
+        background: {COMIC_COLORS["red"]};
+        color: #ffffff;
+        border: 3px solid #000000;
+        padding: 0.2rem 0.8rem;
+        font-family: 'Bangers', cursive;
+        font-size: 1.2rem;
+        transform: rotate(4deg);
+        box-shadow: 3px 3px 0px #000000;
+    }}
     </style>
     """
+
+
+def render_comic_sfx(sound_effect: str = "POW!"):
+    """Renders pop-art comic sound effect badge."""
+    st.markdown(f'<span class="comic-sfx-badge">{sound_effect}</span>', unsafe_allow_html=True)
 
 
 def apply_comic_theme():
