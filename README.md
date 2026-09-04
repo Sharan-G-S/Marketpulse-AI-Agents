@@ -4,7 +4,7 @@
 [![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph-orange.svg)](https://github.com/langchain-ai/langgraph)
 [![LangChain](https://img.shields.io/badge/LLM-LangChain-green.svg)](https://github.com/langchain-ai/langchain)
 [![UI Theme](https://img.shields.io/badge/UI-Claude_Dark_%26_Comic_PopArt-ffde59.svg)](https://streamlit.io/)
-[![Tests](https://img.shields.io/badge/Tests-564_Passing-success.svg)](https://docs.pytest.org/)
+[![Tests](https://img.shields.io/badge/Tests-569_Passing-success.svg)](https://docs.pytest.org/)
 
 **MarketPulse AI** is a world-class, enterprise-grade financial intelligence platform featuring **19 specialized interactive subpages** and a **7-Agent LangGraph StateGraph pipeline**. It orchestrates autonomous AI agents to collect financial news, fetch real-time market quotes, perform per-article LLM sentiment scoring, analyze downside risk flags, compute Efficient Frontier portfolio weights, and deliver publication-grade investment reports in both **Claude Warm Dark Theme** and **Comic Pop-Art Graphic Novel UI**!
 
@@ -41,21 +41,12 @@
 14. **`13_Market_Calendar.py`**: Economic data release calendar.
 15. **`14_Earnings_Surprise.py`**: Historical EPS beat/miss trends.
 16. **`15_MA_Crossover.py`**: Moving average crossover signals.
-17. **`16_Comic_Dashboard.py`**: Graphic novel financial intelligence dashboard.
+17. **`16_Comic_Dashboard.py`**: Graphic novel financial intelligence dashboard with SFX triggers.
 18. **`17_Global_Macro_Regime.py`**: World market index scanner (S&P 500, FTSE 100, Nikkei, Nifty) & Forex matrix.
 19. **`18_Institutional_Flows.py`**: Dark pool order flow & block trade volume anomaly tracker.
 20. **`19_Monte_Carlo_Simulator.py`**: 10,000-Path stochastic Geometric Brownian Motion simulator & 95% VaR visualizer.
 
-*(Detailed documentation available in [`docs/page_directory.md`](docs/page_directory.md)).*
-
----
-
-## 🛡️ Production Resilience & Security
-
-- **ZeroDivision & NaN Safeguards**: Fixed division by zero in price change, Sharpe ratio, max drawdown, and position metrics.
-- **NoneType Cost Basis Handling**: NoneType safety guards in portfolio performance trackers.
-- **Security Input XSS Shield**: Sanitization of input strings against XSS script injection and command execution.
-- **Zero Warnings Pytest Suite**: 100% warning-free test execution across 564 unit and integration tests.
+*(Detailed documentation available in [`docs/page_directory.md`](docs/page_directory.md) & [`docs/api_reference.md`](docs/api_reference.md)).*
 
 ---
 
